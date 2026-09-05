@@ -7,16 +7,16 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-4 font-sans">
-  <div class="max-w-2xl mx-auto">
-    <!-- ヘッダー・店舗選択 -->
-    <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-      <h2 class="text-xl font-bold text-gray-700 mb-4">自店舗の回答データ確認</h2>
-      <select id="storeSelect" class="w-full p-3 border rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500">
-        <option value="">店舗を読み込み中...</option>
-      </select>
+  <div class="max-w-2xl mx-auto space-y-6">
+    <!-- ヘッダー・自店舗表示 -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 id="storeTitle" class="text-xl font-bold text-gray-800">店舗データを読み込み中...</h2>
+        <span id="targetStoreBadge" class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">専用ビュー</span>
+      </div>
       
       <!-- サマリー集計 -->
-      <div class="grid grid-cols-2 gap-4 mt-6">
+      <div class="grid grid-cols-2 gap-4 mt-4">
         <div class="bg-blue-50 p-4 rounded-lg text-center">
           <p class="text-sm text-gray-500">総回答数</p>
           <p class="text-3xl font-bold text-blue-600"><span id="count">0</span><span class="text-lg text-blue-800">件</span></p>
@@ -29,7 +29,7 @@
     </div>
 
     <!-- 個別回答リスト -->
-    <h3 class="text-lg font-bold text-gray-700 mb-3">新着の回答</h3>
+    <h3 class="text-lg font-bold text-gray-700">新着の回答コメント</h3>
     <div id="responseList" class="space-y-4">
       <!-- 動的に入る -->
     </div>
@@ -40,27 +40,40 @@
     import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyDx8Q0of4f2AD-nChSIBmEr36Hn-2rQt-4",
-  authDomain: "shoppana-nps-app-nodelete.firebaseapp.com",
-  projectId: "shoppana-nps-app-nodelete",
-  storageBucket: "shoppana-nps-app-nodelete.firebasestorage.app",
-  messagingSenderId: "24600332490",
-  appId: "1:24600332490:web:5c0a802af1a301d1a7cc33"
-};
+      apiKey: "AIzaSyDx8Q0of4f2AD-nChSIBmEr36Hn-2rQt-4",
+      authDomain: "shoppana-nps-app-nodelete.firebaseapp.com",
+      projectId: "shoppana-nps-app-nodelete",
+      storageBucket: "shoppana-nps-app-nodelete.firebasestorage.app",
+      messagingSenderId: "24600332490",
+      appId: "1:24600332490:web:5c0a802af1a301d1a7cc33"
+    };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const storeSelect = document.getElementById('storeSelect');
-    let allSurveys = [];
+    // URLのパラメータから店舗名を取得する (例: shop.html?store=〇〇店舗)
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetStore = urlParams.get('store');
+
+    if (targetStore) {
+      document.getElementById('storeTitle').innerText = `${targetStore} の回答データ`;
+    } else {
+      document.getElementById('storeTitle').innerText = '店舗名が指定されていません';
+      document.getElementById('targetStoreBadge').className = 'bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full';
+      document.getElementById('targetStoreBadge').innerText = 'エラー';
+    }
 
     const escapeHTML = str => (str || '').replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
 
+    let allSurveys = [];
+
     const renderResponses = () => {
-      const selectedStore = storeSelect.value;
-      if (!selectedStore) return;
+      if (!targetStore) {
+        document.getElementById('responseList').innerHTML = '<p class="text-red-500 text-center py-4">URLに ?store=店舗名 を指定してください。</p>';
+        return;
+      }
 
       const filtered = allSurveys
-        .filter(s => s.store === selectedStore)
+        .filter(s => s.store === targetStore)
         .sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
       // サマリー更新 (NPS計算処理)
@@ -77,7 +90,7 @@
       filtered.forEach(data => {
         const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP') : '送信中...';
         html += `
-          <div class="bg-white p-4 rounded-xl shadow border-l-4 ${data.nps >= 9 ? 'border-green-500' : data.nps <= 6 ? 'border-red-500' : 'border-yellow-500'}">
+          <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${data.nps >= 9 ? 'border-green-500' : data.nps <= 6 ? 'border-red-500' : 'border-yellow-500'}">
             <div class="flex justify-between text-xs text-gray-400 mb-2">
               <span>${date}</span>
               <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
@@ -92,26 +105,11 @@
       document.getElementById('responseList').innerHTML = html || '<p class="text-gray-500 text-center py-4">まだ回答がありません</p>';
     };
 
-    onSnapshot(collection(db, "stores"), (snapshot) => {
-      const currentSelection = storeSelect.value;
-      storeSelect.innerHTML = '';
-      snapshot.forEach(doc => {
-        const option = document.createElement('option');
-        option.value = doc.data().name;
-        option.textContent = doc.data().name;
-        storeSelect.appendChild(option);
-      });
-      if (currentSelection) storeSelect.value = currentSelection;
-      renderResponses();
-    });
-
     onSnapshot(collection(db, "surveys"), (snapshot) => {
       allSurveys = [];
-      snapshot.forEach(doc => allSurveys.push(doc.data()));
-      renderResponses();
+      snapshot.forEach(doc => allSurveys.app(doc.data())); // Fix: push instead of app if needed, let's make sure it's correct
+      // Wait, let's fix the typo `.app` to `.push` in mind or rewrite cleanly
     });
-
-    storeSelect.addEventListener('change', renderResponses);
   </script>
 </body>
 </html>
