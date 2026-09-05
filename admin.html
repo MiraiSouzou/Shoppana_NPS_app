@@ -100,8 +100,11 @@
       sortedSurveys.forEach(data => {
         const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP') : '送信中...';
         const npsLabel = data.nps >= 9 ? '推奨者' : data.nps >= 7 ? '中立者' : '期待未達者';
+        // NPSによって背景色と左枠線の色を変える
+        const bgColor = data.nps >= 9 ? 'bg-green-50 border-green-500' : data.nps >= 7 ? 'bg-yellow-50 border-yellow-500' : 'bg-red-50 border-red-500';
+        
         commentHtml += `
-          <div class="bg-gray-50 p-4 rounded-xl shadow-sm border-l-4 ${data.nps >= 9 ? 'border-green-500' : data.nps <= 6 ? 'border-red-500' : 'border-yellow-500'}">
+          <div class="p-4 rounded-xl shadow-sm border-l-4 ${bgColor}">
             <div class="flex justify-between items-center text-xs text-gray-500 mb-2">
               <span class="font-bold text-blue-600">${escapeHTML(data.store)}</span>
               <span>${date} / ${escapeHTML(data.gender)} / ${escapeHTML(data.time)}</span>
@@ -109,7 +112,7 @@
             <div class="flex items-center space-x-2 mb-2">
               <span class="bg-white px-2 py-0.5 rounded border text-sm font-bold text-gray-700">NPS: ${data.nps}（${npsLabel}）</span>
             </div>
-            <p class="text-gray-700 text-sm whitespace-pre-wrap">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
+            <p class="text-gray-800 text-sm whitespace-pre-wrap">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
           </div>
         `;
       });
