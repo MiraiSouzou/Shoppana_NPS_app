@@ -5,44 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理者ダッシュボード</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 p-6 font-sans">
-  <div class="max-w-4xl mx-auto space-y-6">
+<body class="bg-slate-50 p-4 sm:p-8 font-sans" style="font-family: 'Noto Sans JP', sans-serif;">
+  <div class="max-w-5xl mx-auto space-y-8">
     
-    <!-- 店舗追加セクション -->
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <h2 class="text-xl font-bold text-gray-800 mb-4">店舗の管理 (追加)</h2>
-      <div class="flex space-x-2">
-        <input type="text" id="newStoreName" class="flex-1 p-3 border rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500" placeholder="新しい店舗名を入力">
-        <button id="addStoreBtn" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg shadow hover:bg-blue-700">店舗を追加</button>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight">店舗の管理 (追加)</h2>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <input type="text" id="newStoreName" class="flex-1 p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-slate-500 transition-shadow text-base" placeholder="新しい店舗名を入力">
+        <button id="addStoreBtn" class="bg-slate-800 text-white font-bold px-8 py-3 sm:py-4 rounded-xl shadow hover:bg-slate-900 transition-all">店舗を追加</button>
       </div>
     </div>
 
-    <!-- ライブ集計セクション -->
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-        <span class="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></span> 全店舗ライブ集計
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight flex items-center">
+        <span class="w-3 h-3 bg-rose-500 rounded-full mr-3 animate-pulse"></span> 全店舗ライブ集計
       </h2>
-      <div class="overflow-x-auto">
+      <div class="overflow-hidden rounded-xl border border-slate-200">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-gray-800 text-white">
-              <th class="p-3 rounded-tl-lg">店舗名</th>
-              <th class="p-3">回答数</th>
-              <th class="p-3 rounded-tr-lg">NPSスコア</th>
+            <tr class="bg-slate-50 text-slate-600 text-sm uppercase tracking-wide border-b border-slate-200">
+              <th class="p-4 font-semibold">店舗名</th>
+              <th class="p-4 font-semibold">回答数</th>
+              <th class="p-4 font-semibold">NPSスコア</th>
             </tr>
           </thead>
-          <tbody id="tableBody" class="text-gray-700">
+          <tbody id="tableBody" class="text-slate-800 divide-y divide-slate-100">
             <!-- 動的追加 -->
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- 全回答コメント一覧セクション -->
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <h2 class="text-xl font-bold text-gray-800 mb-4">新着の回答コメント一覧</h2>
-      <div id="adminCommentList" class="space-y-4">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight">新着の回答コメント一覧</h2>
+      <div id="adminCommentList" class="space-y-4 sm:space-y-5">
         <!-- 動的追加 -->
       </div>
     </div>
@@ -87,36 +85,37 @@
         const detractors = storeSurveys.filter(s => s.nps <= 6).length;
         const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
         
-        tableHtml += `<tr class="border-b">
-          <td class="p-3 font-semibold">${escapeHTML(storeName)}</td>
-          <td class="p-3">${count}</td>
-          <td class="p-3 text-blue-600 font-bold">${npsScore}</td>
+        tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
+          <td class="p-4 font-bold text-slate-800">${escapeHTML(storeName)}</td>
+          <td class="p-4 font-medium text-slate-600">${count}件</td>
+          <td class="p-4 font-bold text-indigo-600">${npsScore}</td>
         </tr>`;
       });
-      document.getElementById('tableBody').innerHTML = tableHtml || '<tr><td colspan="3" class="p-3 text-center text-gray-500">店舗が登録されていません</td></tr>';
+      document.getElementById('tableBody').innerHTML = tableHtml || '<tr><td colspan="3" class="p-6 text-center text-slate-500">店舗が登録されていません</td></tr>';
 
       const sortedSurveys = [...surveysList].sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
       let commentHtml = '';
       sortedSurveys.forEach(data => {
-        const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP') : '送信中...';
+        const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '送信中...';
         const npsLabel = data.nps >= 9 ? '推奨者' : data.nps >= 7 ? '中立者' : '期待未達者';
-        // NPSによって背景色と左枠線の色を変える
-        const bgColor = data.nps >= 9 ? 'bg-green-50 border-green-500' : data.nps >= 7 ? 'bg-yellow-50 border-yellow-500' : 'bg-red-50 border-red-500';
+        
+        const bgColor = data.nps >= 9 ? 'bg-emerald-50 border-emerald-400' : data.nps >= 7 ? 'bg-amber-50 border-amber-400' : 'bg-rose-50 border-rose-400';
+        const textColor = data.nps >= 9 ? 'text-emerald-800' : data.nps >= 7 ? 'text-amber-800' : 'text-rose-800';
         
         commentHtml += `
-          <div class="p-4 rounded-xl shadow-sm border-l-4 ${bgColor}">
-            <div class="flex justify-between items-center text-xs text-gray-500 mb-2">
-              <span class="font-bold text-blue-600">${escapeHTML(data.store)}</span>
+          <div class="p-5 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
+            <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center text-sm text-slate-500 mb-3 gap-2 font-medium">
+              <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded">${escapeHTML(data.store)}</span>
               <span>${date} / ${escapeHTML(data.gender)} / ${escapeHTML(data.time)}</span>
             </div>
-            <div class="flex items-center space-x-2 mb-2">
-              <span class="bg-white px-2 py-0.5 rounded border text-sm font-bold text-gray-700">NPS: ${data.nps}（${npsLabel}）</span>
+            <div class="mb-3">
+              <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-sm ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
             </div>
-            <p class="text-gray-800 text-sm whitespace-pre-wrap">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
+            <p class="text-slate-800 text-base whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
           </div>
         `;
       });
-      document.getElementById('adminCommentList').innerHTML = commentHtml || '<p class="text-gray-500 text-center py-4">まだ回答がありません</p>';
+      document.getElementById('adminCommentList').innerHTML = commentHtml || '<p class="text-slate-500 text-center py-8">まだ回答がありません</p>';
     };
 
     onSnapshot(collection(db, "stores"), (snapshot) => {
