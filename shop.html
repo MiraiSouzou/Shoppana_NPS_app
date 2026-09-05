@@ -86,8 +86,8 @@
 
       let html = '';
       filtered.forEach(data => {
-        // スマホ向けに日付表示を短く調整
         const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '送信中...';
+        const npsLabel = data.nps >= 9 ? '推奨者' : data.nps >= 7 ? '中立者' : '期待未達者';
         html += `
           <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border-l-4 ${data.nps >= 9 ? 'border-green-500' : data.nps <= 6 ? 'border-red-500' : 'border-yellow-500'}">
             <div class="flex flex-col sm:flex-row sm:justify-between text-xs text-gray-400 mb-2 gap-1">
@@ -95,7 +95,7 @@
               <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
             </div>
             <div class="mb-2">
-              <span class="bg-gray-100 text-gray-800 font-bold px-2 py-1 rounded text-xs sm:text-sm">NPS: ${data.nps}</span>
+              <span class="bg-gray-100 text-gray-800 font-bold px-2 py-1 rounded text-xs sm:text-sm">NPS: ${data.nps}（${npsLabel}）</span>
             </div>
             <p class="text-gray-700 text-sm mt-1 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
           </div>
