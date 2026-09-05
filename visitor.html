@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アンケート</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans p-4">
+  <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mt-4">
+    <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">イベントアンケート</h2>
+    <form id="surveyForm" class="space-y-6">
+      
+      <div class="flex flex-col">
+        <label class="font-semibold mb-2">対象店舗</label>
+        <select id="store" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+          <option value="店舗1">店舗1</option>
+          <option value="店舗2">店舗2</option>
+          <!-- 15店舗分まで追加可能 -->
+        </select>
+      </div>
+
+      <div class="flex flex-col">
+        <label class="font-semibold mb-2">①あなたの性別を教えてください。</label>
+        <div class="flex space-x-4">
+          <label class="flex items-center space-x-2"><input type="radio" name="gender" value="男" class="w-5 h-5 text-blue-600" required><span>男</span></label>
+          <label class="flex items-center space-x-2"><input type="radio" name="gender" value="女" class="w-5 h-5 text-blue-600"><span>女</span></label>
+          <label class="flex items-center space-x-2"><input type="radio" name="gender" value="無回答" class="w-5 h-5 text-blue-600"><span>無回答</span></label>
+        </div>
+      </div>
+
+      <div class="flex flex-col">
+        <label class="font-semibold mb-2">②イベント来場時間を教えてください。</label>
+        <div class="space-y-2">
+          <label class="flex items-center space-x-2"><input type="radio" name="time" value="10:00～12:00" class="w-5 h-5 text-blue-600" required><span>10：00～12：00</span></label>
+          <label class="flex items-center space-x-2"><input type="radio" name="time" value="12:00～15:00" class="w-5 h-5 text-blue-600"><span>12：00～15：00</span></label>
+        </div>
+      </div>
+
+      <div class="flex flex-col">
+        <label class="font-semibold mb-2 text-sm">③家族や友人に、どの程度お店をお薦めしたいと思いますか？</label>
+        <select id="nps" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+          <option value="">選択してください (1〜10)</option>
+          <option value="1">1 (全く思わない)</option>
+          <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
+          <option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10">10 (非常に強く思う)</option>
+        </select>
+      </div>
+
+      <div class="flex flex-col">
+        <label class="font-semibold mb-2 text-sm">④その点数をつけた理由を教えてください。</label>
+        <textarea id="reason" rows="3" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="自由にご記入ください"></textarea>
+      </div>
+
+      <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-blue-700 transition duration-200">送信する</button>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // Firebaseの接続情報を記載する
+    const firebaseConfig = {
+      apiKey: "API_KEY",
+      authDomain: "PROJECT_ID.firebaseapp.com",
+      projectId: "PROJECT_ID",
+      storageBucket: "PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById('surveyForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await addDoc(collection(db, "surveys"), {
+          store: document.getElementById('store').value,
+          gender: document.querySelector('input[name="gender"]:checked').value,
+          time: document.querySelector('input[name="time"]:checked').value,
+          nps: parseInt(document.getElementById('nps').value),
+          reason: document.getElementById('reason').value, // 理由を追加
+          timestamp: serverTimestamp()
+        });
+        alert('回答を送信しました。ご協力ありがとうございます。');
+        e.target.reset(); // フォームを初期状態に戻す
+      } catch (error) {
+        alert('エラーが発生しました。時間を置いて再度お試しください。');
+        console.error("Error adding document: ", error);
+      }
+    });
+  </script>
+</body>
+</html>

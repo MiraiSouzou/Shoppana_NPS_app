@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理者ダッシュボード</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6 font-sans">
+  <div class="max-w-4xl mx-auto space-y-6">
+    
+    <!-- 店舗追加セクション -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">店舗の管理 (追加)</h2>
+      <div class="flex space-x-2">
+        <input type="text" id="newStoreName" class="flex-1 p-3 border rounded-lg bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500" placeholder="新しい店舗名を入力">
+        <button id="addStoreBtn" class="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg shadow hover:bg-blue-700">店舗を追加</button>
+      </div>
+    </div>
+
+    <!-- ライブ集計セクション -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+        <span class="w-3 h-3 bg-red-500 rounded-full mr-2 animate-pulse"></span> 全店舗ライブ集計
+      </h2>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-800 text-white">
+              <th class="p-3 rounded-tl-lg">店舗名</th>
+              <th class="p-3">回答数</th>
+              <th class="p-3 rounded-tr-lg">NPSスコア</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="text-gray-700">
+            <!-- 動的追加 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = { /* Firebase接続情報を記載 */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    document.getElementById('addStoreBtn').addEventListener('click', async () => {
+      const name = document.getElementById('newStoreName').value.trim();
+      if (!name) return;
+      await addDoc(collection(db, "stores"), { name: name });
+      document.getElementById('newStoreName').value = '';
+      alert(`${name} を追加しました`);
+    });
+
+    let storesList = [];
+    let surveysList = [];
+
+    const renderTable = () => {
+      let html = '';
+      storesList.forEach(storeName => {
+        const storeSurveys = surveysList.filter(s => s.store === storeName);
+        const count = storeSurveys.length;
+        
+        // NPS計算処理
+        const promoters = storeSurveys.filter(s => s.nps >= 9).length;
+        const detractors = storeSurveys.filter(s => s.nps <= 6).length;
+        const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
+        
+        html += `<tr class="border-b">
+          <td class="p-3 font-semibold">${storeName}</td>
+          <td class="p-3">${count}</td>
+          <td class="p-3 text-blue-600 font-bold">${npsScore}</td>
+        </tr>`;
+      });
+      document.getElementById('tableBody').innerHTML = html;
+    };
+
+    onSnapshot(collection(db, "stores"), (snapshot) => {
+      storesList = [];
+      snapshot.forEach(doc => storesList.push(doc.data().name));
+      renderTable();
+    });
+
+    onSnapshot(collection(db, "surveys"), (snapshot) => {
+      surveysList = [];
+      snapshot.forEach(doc => surveysList.push(doc.data()));
+      renderTable();
+    });
+  </script>
+</body>
+</html>
