@@ -5,40 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Shoppana！アンケート</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 text-gray-800 p-4" style="font-family: 'Noto Sans JP', sans-serif;">
+<body class="bg-gray-100 text-gray-800 font-sans p-4">
   <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6 mt-4">
-    <h2 class="text-3xl font-bold text-center text-blue-600 mb-8">Shoppana！アンケート</h2>
-    <form id="surveyForm" class="space-y-8">
+    <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Shoppana！アンケート</h2>
+    <form id="surveyForm" class="space-y-6">
       
       <div class="flex flex-col">
-        <label class="text-lg font-bold mb-3">対象店舗</label>
-        <select id="store" class="text-lg p-4 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+        <label class="font-semibold mb-2">対象店舗</label>
+        <select id="store" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
           <option value="">店舗を読み込み中...</option>
         </select>
       </div>
 
       <div class="flex flex-col">
-        <label class="text-lg font-bold mb-3">①あなたの性別を教えてください。</label>
-        <div class="flex flex-wrap gap-4">
-          <label class="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg border w-full sm:w-auto"><input type="radio" name="gender" value="男" class="w-6 h-6 text-blue-600" required><span class="text-lg">男</span></label>
-          <label class="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg border w-full sm:w-auto"><input type="radio" name="gender" value="女" class="w-6 h-6 text-blue-600"><span class="text-lg">女</span></label>
-          <label class="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg border w-full sm:w-auto"><input type="radio" name="gender" value="無回答" class="w-6 h-6 text-blue-600"><span class="text-lg">無回答</span></label>
+        <label class="font-semibold mb-2">①あなたの性別を教えてください。</label>
+        <div class="flex space-x-4">
+          <label class="flex items-center space-x-2"><input type="radio" name="gender" value="男" class="w-5 h-5 text-blue-600" required><span>男</span></label>
+          <label class="flex items-center space-x-2"><input type="radio" name="gender" value="女" class="w-5 h-5 text-blue-600"><span>女</span></label>
+          <label class="flex items-center space-x-2"><input type="radio" name="gender" value="無回答" class="w-5 h-5 text-blue-600"><span>無回答</span></label>
         </div>
       </div>
 
       <div class="flex flex-col">
-        <label class="text-lg font-bold mb-3">②イベント来場時間を教えてください。</label>
-        <div class="space-y-3">
-          <label class="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg border"><input type="radio" name="time" value="10:00～12:00" class="w-6 h-6 text-blue-600" required><span class="text-lg">10：00～12：00</span></label>
-          <label class="flex items-center space-x-3 bg-gray-50 p-3 rounded-lg border"><input type="radio" name="time" value="12:00～15:00" class="w-6 h-6 text-blue-600"><span class="text-lg">12：00～15：00</span></label>
+        <label class="font-semibold mb-2">②イベント来場時間を教えてください。</label>
+        <div class="space-y-2">
+          <label class="flex items-center space-x-2"><input type="radio" name="time" value="10:00～12:00" class="w-5 h-5 text-blue-600" required><span>10：00～12：00</span></label>
+          <label class="flex items-center space-x-2"><input type="radio" name="time" value="12:00～15:00" class="w-5 h-5 text-blue-600"><span>12：00～15：00</span></label>
         </div>
       </div>
 
       <div class="flex flex-col">
-        <label class="text-lg font-bold mb-3">③家族や友人に、どの程度お店をお薦めしたいと思いますか？</label>
-        <select id="nps" class="text-lg p-4 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
+        <label class="font-semibold mb-2 text-sm">③家族や友人に、どの程度お店をお薦めしたいと思いますか？</label>
+        <select id="nps" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
           <option value="">選択してください (1〜10)</option>
           <option value="1">1 (全く思わない)</option>
           <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option>
@@ -48,11 +47,11 @@
       </div>
 
       <div class="flex flex-col">
-        <label class="text-lg font-bold mb-3">④その点数をつけた理由を教えてください。</label>
-        <textarea id="reason" rows="4" class="text-lg p-4 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="自由にご記入ください" required></textarea>
+        <label class="font-semibold mb-2 text-sm">④その点数をつけた理由を教えてください。</label>
+        <textarea id="reason" rows="3" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="自由にご記入ください" required></textarea>
       </div>
 
-      <button type="submit" class="w-full bg-blue-600 text-white text-xl font-bold py-4 rounded-lg shadow-lg hover:bg-blue-700 transition duration-200 mt-4">送信する</button>
+      <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-blue-700 transition duration-200">送信する</button>
     </form>
   </div>
 
