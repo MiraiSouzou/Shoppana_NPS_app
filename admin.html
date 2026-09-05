@@ -44,7 +44,14 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    const firebaseConfig = { /* Firebase接続情報を記載 */ };
+    const firebaseConfig = {
+  apiKey: "AIzaSyDx8Q0of4f2AD-nChSIBmEr36Hn-2rQt-4",
+  authDomain: "shoppana-nps-app-nodelete.firebaseapp.com",
+  projectId: "shoppana-nps-app-nodelete",
+  storageBucket: "shoppana-nps-app-nodelete.firebasestorage.app",
+  messagingSenderId: "24600332490",
+  appId: "1:24600332490:web:5c0a802af1a301d1a7cc33"
+};
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
