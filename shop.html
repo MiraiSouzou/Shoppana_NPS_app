@@ -11,23 +11,23 @@
   <div class="max-w-3xl mx-auto space-y-6 sm:space-y-8">
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-        <h2 id="storeTitle" class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">店舗データを読み込み中...</h2>
-        <span id="targetStoreBadge" class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-sm font-semibold px-4 py-1.5 rounded-full">専用ビュー</span>
+        <h2 id="storeTitle" class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">店舗データを読み込み中...</h2>
+        <span id="targetStoreBadge" class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-base font-semibold px-4 py-1.5 rounded-full">専用ビュー</span>
       </div>
       <div class="grid grid-cols-2 gap-4 sm:gap-6 mt-2">
         <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
-          <p class="text-sm sm:text-base font-medium text-slate-500 mb-2">総回答数</p>
-          <p class="text-4xl sm:text-5xl font-bold text-slate-800"><span id="count">0</span><span class="text-lg sm:text-xl text-slate-500 ml-1 font-medium">件</span></p>
+          <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">総回答数</p>
+          <p class="text-5xl sm:text-6xl font-bold text-slate-800"><span id="count">0</span><span class="text-xl sm:text-2xl text-slate-500 ml-1 font-medium">件</span></p>
         </div>
         <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
-          <p class="text-sm sm:text-base font-medium text-slate-500 mb-2">NPSスコア</p>
-          <p class="text-4xl sm:text-5xl font-bold text-indigo-600" id="npsScore">0</p>
+          <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">NPSスコア</p>
+          <p class="text-5xl sm:text-6xl font-bold text-indigo-600" id="npsScore">0</p>
         </div>
       </div>
     </div>
     
     <div>
-      <h3 class="text-xl sm:text-2xl font-bold text-slate-800 mb-4 px-1">新着の回答コメント</h3>
+      <h3 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-4 px-1">新着の回答コメント</h3>
       <div id="responseList" class="space-y-4 sm:space-y-5">
       </div>
     </div>
@@ -55,7 +55,7 @@
       document.getElementById('storeTitle').innerText = `${targetStore} の回答データ`;
     } else {
       document.getElementById('storeTitle').innerText = '店舗名が指定されていません';
-      document.getElementById('targetStoreBadge').className = 'bg-sky-50 text-sky-700 border border-sky-100 text-sm font-semibold px-4 py-1.5 rounded-full';
+      document.getElementById('targetStoreBadge').className = 'bg-sky-50 text-sky-700 border border-sky-100 text-base font-semibold px-4 py-1.5 rounded-full';
       document.getElementById('targetStoreBadge').innerText = 'エラー';
     }
 
@@ -65,7 +65,7 @@
 
     const renderResponses = () => {
       if (!targetStore) {
-        document.getElementById('responseList').innerHTML = '<p class="text-sky-500 text-center py-8 text-base bg-white rounded-xl shadow-sm">URLに ?store=店舗名 を指定してください。</p>';
+        document.getElementById('responseList').innerHTML = '<p class="text-sky-500 text-center py-8 text-lg bg-white rounded-xl shadow-sm">URLに ?store=店舗名 を指定してください。</p>';
         return;
       }
 
@@ -94,23 +94,23 @@
           <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
             <div class="flex justify-between items-center w-full gap-3 sm:gap-4">
               <div class="space-y-3 flex-1">
-                <div class="flex flex-col sm:flex-row sm:items-center text-sm text-slate-500 gap-1 font-medium">
+                <div class="flex flex-col sm:flex-row sm:items-center text-base text-slate-500 gap-1 font-medium">
                   <span>${date}</span>
                   <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
                 </div>
                 <div>
-                  <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-sm sm:text-base ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
+                  <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-base sm:text-lg ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
                 </div>
               </div>
               <div class="w-20 sm:w-24 flex justify-center items-center flex-shrink-0">
                 <img src="${iconFile}" alt="${npsLabel}アイコン" class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 object-contain">
               </div>
             </div>
-            <p class="text-slate-800 text-base sm:text-lg mt-3 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
+            <p class="text-slate-800 text-lg sm:text-xl mt-3 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
           </div>
         `;
       });
-      document.getElementById('responseList').innerHTML = html || '<p class="text-slate-500 text-center py-8 text-base bg-white rounded-xl shadow-sm">まだ回答がありません</p>';
+      document.getElementById('responseList').innerHTML = html || '<p class="text-slate-500 text-center py-8 text-lg bg-white rounded-xl shadow-sm">まだ回答がありません</p>';
     };
 
     onSnapshot(collection(db, "surveys"), (snapshot) => {
