@@ -50,7 +50,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // URLのパラメータから店舗名を取得する (例: shop.html?store=〇〇店舗)
+    // URLのパラメータから店舗名を取得する
     const urlParams = new URLSearchParams(window.location.search);
     const targetStore = urlParams.get('store');
 
@@ -107,8 +107,8 @@
 
     onSnapshot(collection(db, "surveys"), (snapshot) => {
       allSurveys = [];
-      snapshot.forEach(doc => allSurveys.app(doc.data())); // Fix: push instead of app if needed, let's make sure it's correct
-      // Wait, let's fix the typo `.app` to `.push` in mind or rewrite cleanly
+      snapshot.forEach(doc => allSurveys.push(doc.data()));
+      renderResponses();
     });
   </script>
 </body>
