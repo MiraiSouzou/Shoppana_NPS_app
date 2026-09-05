@@ -14,9 +14,7 @@
       <div class="flex flex-col">
         <label class="font-semibold mb-2">対象店舗</label>
         <select id="store" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" required>
-          <option value="店舗1">店舗1</option>
-          <option value="店舗2">店舗2</option>
-          <!-- 15店舗分まで追加可能 -->
+          <option value="">店舗を読み込み中...</option>
         </select>
       </div>
 
@@ -50,7 +48,7 @@
 
       <div class="flex flex-col">
         <label class="font-semibold mb-2 text-sm">④その点数をつけた理由を教えてください。</label>
-        <textarea id="reason" rows="3" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="自由にご記入ください"></textarea>
+        <textarea id="reason" rows="3" class="p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="自由にご記入ください" required></textarea>
       </div>
 
       <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg hover:bg-blue-700 transition duration-200">送信する</button>
@@ -59,20 +57,30 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    // Firebaseの接続情報を記載する
     const firebaseConfig = {
-      apiKey: "API_KEY",
-      authDomain: "PROJECT_ID.firebaseapp.com",
-      projectId: "PROJECT_ID",
-      storageBucket: "PROJECT_ID.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
+      apiKey: "AIzaSyDx8Q0of4f2AD-nChSIBmEr36Hn-2rQt-4",
+      authDomain: "shoppana-nps-app-nodelete.firebaseapp.com",
+      projectId: "shoppana-nps-app-nodelete",
+      storageBucket: "shoppana-nps-app-nodelete.firebasestorage.app",
+      messagingSenderId: "24600332490",
+      appId: "1:24600332490:web:5c0a802af1a301d1a7cc33"
     };
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    const storeSelect = document.getElementById('store');
+    onSnapshot(collection(db, "stores"), (snapshot) => {
+      storeSelect.innerHTML = '<option value="">店舗を選択してください</option>';
+      snapshot.forEach(doc => {
+        const option = document.createElement('option');
+        option.value = doc.data().name;
+        option.textContent = doc.data().name;
+        storeSelect.appendChild(option);
+      });
+    });
 
     document.getElementById('surveyForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -82,11 +90,11 @@
           gender: document.querySelector('input[name="gender"]:checked').value,
           time: document.querySelector('input[name="time"]:checked').value,
           nps: parseInt(document.getElementById('nps').value),
-          reason: document.getElementById('reason').value, // 理由を追加
+          reason: document.getElementById('reason').value,
           timestamp: serverTimestamp()
         });
         alert('回答を送信しました。ご協力ありがとうございます。');
-        e.target.reset(); // フォームを初期状態に戻す
+        e.target.reset();
       } catch (error) {
         alert('エラーが発生しました。時間を置いて再度お試しください。');
         console.error("Error adding document: ", error);
