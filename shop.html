@@ -55,7 +55,7 @@
       document.getElementById('storeTitle').innerText = `${targetStore} の回答データ`;
     } else {
       document.getElementById('storeTitle').innerText = '店舗名が指定されていません';
-      document.getElementById('targetStoreBadge').className = 'bg-rose-50 text-rose-700 border border-rose-100 text-sm font-semibold px-4 py-1.5 rounded-full';
+      document.getElementById('targetStoreBadge').className = 'bg-sky-50 text-sky-700 border border-sky-100 text-sm font-semibold px-4 py-1.5 rounded-full';
       document.getElementById('targetStoreBadge').innerText = 'エラー';
     }
 
@@ -65,7 +65,7 @@
 
     const renderResponses = () => {
       if (!targetStore) {
-        document.getElementById('responseList').innerHTML = '<p class="text-rose-500 text-center py-8 text-base bg-white rounded-xl shadow-sm">URLに ?store=店舗名 を指定してください。</p>';
+        document.getElementById('responseList').innerHTML = '<p class="text-sky-500 text-center py-8 text-base bg-white rounded-xl shadow-sm">URLに ?store=店舗名 を指定してください。</p>';
         return;
       }
 
@@ -85,8 +85,10 @@
       filtered.forEach(data => {
         const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '送信中...';
         const npsLabel = data.nps >= 9 ? '推奨者' : data.nps >= 7 ? '中立者' : '期待未達者';
-        const bgColor = data.nps >= 9 ? 'bg-emerald-50 border-emerald-400' : data.nps >= 7 ? 'bg-amber-50 border-amber-400' : 'bg-rose-50 border-rose-400';
-        const textColor = data.nps >= 9 ? 'text-emerald-800' : data.nps >= 7 ? 'text-amber-800' : 'text-rose-800';
+        
+        // 色をアイコンに合わせて変更（ピンク、緑、水色）
+        const bgColor = data.nps >= 9 ? 'bg-pink-50 border-pink-400' : data.nps >= 7 ? 'bg-green-50 border-green-400' : 'bg-sky-50 border-sky-400';
+        const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
         
         html += `
           <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
