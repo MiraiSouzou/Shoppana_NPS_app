@@ -86,9 +86,9 @@
         const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '送信中...';
         const npsLabel = data.nps >= 9 ? '推奨者' : data.nps >= 7 ? '中立者' : '期待未達者';
         
-        // 色をアイコンに合わせて変更（ピンク、緑、水色）
         const bgColor = data.nps >= 9 ? 'bg-pink-50 border-pink-400' : data.nps >= 7 ? 'bg-green-50 border-green-400' : 'bg-sky-50 border-sky-400';
         const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
+        const iconFile = data.nps >= 9 ? 'lunchmap01.webp' : data.nps >= 7 ? 'lunchmap02.webp' : 'lunchmap03.webp';
         
         html += `
           <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
@@ -96,7 +96,8 @@
               <span>${date}</span>
               <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
             </div>
-            <div class="mb-3">
+            <div class="mb-3 flex items-center gap-2">
+              <img src="${iconFile}" alt="${npsLabel}アイコン" class="w-8 h-8 rounded-full">
               <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-sm sm:text-base ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
             </div>
             <p class="text-slate-800 text-base sm:text-lg mt-3 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
