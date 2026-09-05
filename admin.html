@@ -38,6 +38,15 @@
         </table>
       </div>
     </div>
+
+    <!-- 全回答コメント一覧セクション -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">新着の回答コメント一覧</h2>
+      <div id="adminCommentList" class="space-y-4">
+        <!-- 動的追加 -->
+      </div>
+    </div>
+
   </div>
 
   <script type="module">
@@ -45,15 +54,17 @@
     import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyDx8Q0of4f2AD-nChSIBmEr36Hn-2rQt-4",
-  authDomain: "shoppana-nps-app-nodelete.firebaseapp.com",
-  projectId: "shoppana-nps-app-nodelete",
-  storageBucket: "shoppana-nps-app-nodelete.firebasestorage.app",
-  messagingSenderId: "24600332490",
-  appId: "1:24600332490:web:5c0a802af1a301d1a7cc33"
-};
+      apiKey: "AIzaSyDx8Q0of4f2AD-nChSIBmEr36Hn-2rQt-4",
+      authDomain: "shoppana-nps-app-nodelete.firebaseapp.com",
+      projectId: "shoppana-nps-app-nodelete",
+      storageBucket: "shoppana-nps-app-nodelete.firebasestorage.app",
+      messagingSenderId: "24600332490",
+      appId: "1:24600332490:web:5c0a802af1a301d1a7cc33"
+    };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    const escapeHTML = str => (str || '').replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
 
     document.getElementById('addStoreBtn').addEventListener('click', async () => {
       const name = document.getElementById('newStoreName').value.trim();
@@ -66,36 +77,56 @@
     let storesList = [];
     let surveysList = [];
 
-    const renderTable = () => {
-      let html = '';
+    const renderDashboard = () => {
+      // 1. 集計テーブルの描画
+      let tableHtml = '';
       storesList.forEach(storeName => {
         const storeSurveys = surveysList.filter(s => s.store === storeName);
         const count = storeSurveys.length;
         
-        // NPS計算処理
         const promoters = storeSurveys.filter(s => s.nps >= 9).length;
         const detractors = storeSurveys.filter(s => s.nps <= 6).length;
         const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
         
-        html += `<tr class="border-b">
-          <td class="p-3 font-semibold">${storeName}</td>
+        tableHtml += `<tr class="border-b">
+          <td class="p-3 font-semibold">${escapeHTML(storeName)}</td>
           <td class="p-3">${count}</td>
           <td class="p-3 text-blue-600 font-bold">${npsScore}</td>
         </tr>`;
       });
-      document.getElementById('tableBody').innerHTML = html;
+      document.getElementById('tableBody').innerHTML = tableHtml || '<tr><td colspan="3" class="p-3 text-center text-gray-500">店舗が登録されていません</td></tr>';
+
+      // 2. 全回答コメント一覧の描画（新しい順にソート）
+      const sortedSurveys = [...surveysList].sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+      let commentHtml = '';
+      sortedSurveys.forEach(data => {
+        const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP') : '送信中...';
+        commentHtml += `
+          <div class="bg-gray-50 p-4 rounded-xl shadow-sm border-l-4 ${data.nps >= 9 ? 'border-green-500' : data.nps <= 6 ? 'border-red-500' : 'border-yellow-500'}">
+            <div class="flex justify-between items-center text-xs text-gray-500 mb-2">
+              <span class="font-bold text-blue-600">${escapeHTML(data.store)}</span>
+              <span>${date} / ${escapeHTML(data.gender)} / ${escapeHTML(data.time)}</span>
+            </div>
+            <div class="flex items-center space-x-2 mb-2">
+              <span class="bg-white px-2 py-0.5 rounded border text-sm font-bold text-gray-700">NPS: ${data.nps}</span>
+            </div>
+            <p class="text-gray-700 text-sm whitespace-pre-wrap">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
+          </div>
+        `;
+      });
+      document.getElementById('adminCommentList').innerHTML = commentHtml || '<p class="text-gray-500 text-center py-4">まだ回答がありません</p>';
     };
 
     onSnapshot(collection(db, "stores"), (snapshot) => {
       storesList = [];
       snapshot.forEach(doc => storesList.push(doc.data().name));
-      renderTable();
+      renderDashboard();
     });
 
     onSnapshot(collection(db, "surveys"), (snapshot) => {
       surveysList = [];
       snapshot.forEach(doc => surveysList.push(doc.data()));
-      renderTable();
+      renderDashboard();
     });
   </script>
 </body>
