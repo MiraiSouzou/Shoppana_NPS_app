@@ -6,31 +6,32 @@
   <title>店舗ダッシュボード</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-4 font-sans">
-  <div class="max-w-2xl mx-auto space-y-6">
+<body class="bg-gray-100 p-2 sm:p-4 font-sans">
+  <div class="max-w-2xl mx-auto space-y-4 sm:space-y-6">
+    
     <!-- ヘッダー・自店舗表示 -->
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 id="storeTitle" class="text-xl font-bold text-gray-800">店舗データを読み込み中...</h2>
+    <div class="bg-white rounded-xl shadow-md p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+        <h2 id="storeTitle" class="text-lg sm:text-xl font-bold text-gray-800">店舗データを読み込み中...</h2>
         <span id="targetStoreBadge" class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">専用ビュー</span>
       </div>
       
       <!-- サマリー集計 -->
-      <div class="grid grid-cols-2 gap-4 mt-4">
-        <div class="bg-blue-50 p-4 rounded-lg text-center">
-          <p class="text-sm text-gray-500">総回答数</p>
-          <p class="text-3xl font-bold text-blue-600"><span id="count">0</span><span class="text-lg text-blue-800">件</span></p>
+      <div class="grid grid-cols-2 gap-2 sm:gap-4 mt-2 sm:mt-4">
+        <div class="bg-blue-50 p-3 sm:p-4 rounded-lg text-center flex flex-col justify-center">
+          <p class="text-xs sm:text-sm text-gray-500 mb-1">総回答数</p>
+          <p class="text-2xl sm:text-3xl font-bold text-blue-600"><span id="count">0</span><span class="text-sm sm:text-lg text-blue-800 ml-1">件</span></p>
         </div>
-        <div class="bg-green-50 p-4 rounded-lg text-center">
-          <p class="text-sm text-gray-500">NPSスコア</p>
-          <p class="text-3xl font-bold text-green-600" id="npsScore">0</p>
+        <div class="bg-green-50 p-3 sm:p-4 rounded-lg text-center flex flex-col justify-center">
+          <p class="text-xs sm:text-sm text-gray-500 mb-1">NPSスコア</p>
+          <p class="text-2xl sm:text-3xl font-bold text-green-600" id="npsScore">0</p>
         </div>
       </div>
     </div>
 
     <!-- 個別回答リスト -->
-    <h3 class="text-lg font-bold text-gray-700">新着の回答コメント</h3>
-    <div id="responseList" class="space-y-4">
+    <h3 class="text-md sm:text-lg font-bold text-gray-700 px-1">新着の回答コメント</h3>
+    <div id="responseList" class="space-y-3 sm:space-y-4">
       <!-- 動的に入る -->
     </div>
   </div>
@@ -50,7 +51,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // URLのパラメータから店舗名を取得する
     const urlParams = new URLSearchParams(window.location.search);
     const targetStore = urlParams.get('store');
 
@@ -68,7 +68,7 @@
 
     const renderResponses = () => {
       if (!targetStore) {
-        document.getElementById('responseList').innerHTML = '<p class="text-red-500 text-center py-4">URLに ?store=店舗名 を指定してください。</p>';
+        document.getElementById('responseList').innerHTML = '<p class="text-red-500 text-center py-4 text-sm">URLに ?store=店舗名 を指定してください。</p>';
         return;
       }
 
@@ -76,7 +76,6 @@
         .filter(s => s.store === targetStore)
         .sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
-      // サマリー更新 (NPS計算処理)
       const count = filtered.length;
       const promoters = filtered.filter(s => s.nps >= 9).length;
       const detractors = filtered.filter(s => s.nps <= 6).length;
@@ -85,24 +84,24 @@
       document.getElementById('count').innerText = count;
       document.getElementById('npsScore').innerText = npsScore;
 
-      // 個別回答リストの生成
       let html = '';
       filtered.forEach(data => {
-        const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP') : '送信中...';
+        // スマホ向けに日付表示を短く調整
+        const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '送信中...';
         html += `
-          <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${data.nps >= 9 ? 'border-green-500' : data.nps <= 6 ? 'border-red-500' : 'border-yellow-500'}">
-            <div class="flex justify-between text-xs text-gray-400 mb-2">
+          <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border-l-4 ${data.nps >= 9 ? 'border-green-500' : data.nps <= 6 ? 'border-red-500' : 'border-yellow-500'}">
+            <div class="flex flex-col sm:flex-row sm:justify-between text-xs text-gray-400 mb-2 gap-1">
               <span>${date}</span>
               <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
             </div>
-            <div class="flex items-center space-x-3 mb-2">
-              <span class="bg-gray-100 text-gray-800 font-bold px-3 py-1 rounded-full text-sm">NPS: ${data.nps}</span>
+            <div class="mb-2">
+              <span class="bg-gray-100 text-gray-800 font-bold px-2 py-1 rounded text-xs sm:text-sm">NPS: ${data.nps}</span>
             </div>
-            <p class="text-gray-700 text-sm mt-2 whitespace-pre-wrap">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
+            <p class="text-gray-700 text-sm mt-1 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
           </div>
         `;
       });
-      document.getElementById('responseList').innerHTML = html || '<p class="text-gray-500 text-center py-4">まだ回答がありません</p>';
+      document.getElementById('responseList').innerHTML = html || '<p class="text-gray-500 text-center py-4 text-sm">まだ回答がありません</p>';
     };
 
     onSnapshot(collection(db, "surveys"), (snapshot) => {
