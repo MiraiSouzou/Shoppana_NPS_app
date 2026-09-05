@@ -7,26 +7,29 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 p-3 sm:p-5" style="font-family: 'Noto Sans JP', sans-serif;">
-  <div class="max-w-2xl mx-auto space-y-4 sm:space-y-6">
-    <div class="bg-white rounded-xl shadow-md p-5 sm:p-6">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-        <h2 id="storeTitle" class="text-xl sm:text-2xl font-bold text-gray-800">店舗データを読み込み中...</h2>
-        <span id="targetStoreBadge" class="bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full">専用ビュー</span>
+<body class="bg-slate-50 p-4 sm:p-6" style="font-family: 'Noto Sans JP', sans-serif;">
+  <div class="max-w-3xl mx-auto space-y-6 sm:space-y-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+        <h2 id="storeTitle" class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">店舗データを読み込み中...</h2>
+        <span id="targetStoreBadge" class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-sm font-semibold px-4 py-1.5 rounded-full">専用ビュー</span>
       </div>
-      <div class="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
-        <div class="bg-blue-50 p-4 sm:p-5 rounded-lg text-center flex flex-col justify-center">
-          <p class="text-sm sm:text-base text-gray-500 mb-1">総回答数</p>
-          <p class="text-3xl sm:text-4xl font-bold text-blue-600"><span id="count">0</span><span class="text-base sm:text-lg text-blue-800 ml-1">件</span></p>
+      <div class="grid grid-cols-2 gap-4 sm:gap-6 mt-2">
+        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
+          <p class="text-sm sm:text-base font-medium text-slate-500 mb-2">総回答数</p>
+          <p class="text-4xl sm:text-5xl font-bold text-slate-800"><span id="count">0</span><span class="text-lg sm:text-xl text-slate-500 ml-1 font-medium">件</span></p>
         </div>
-        <div class="bg-green-50 p-4 sm:p-5 rounded-lg text-center flex flex-col justify-center">
-          <p class="text-sm sm:text-base text-gray-500 mb-1">NPSスコア</p>
-          <p class="text-3xl sm:text-4xl font-bold text-green-600" id="npsScore">0</p>
+        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
+          <p class="text-sm sm:text-base font-medium text-slate-500 mb-2">NPSスコア</p>
+          <p class="text-4xl sm:text-5xl font-bold text-indigo-600" id="npsScore">0</p>
         </div>
       </div>
     </div>
-    <h3 class="text-lg sm:text-xl font-bold text-gray-700 px-1">新着の回答コメント</h3>
-    <div id="responseList" class="space-y-4 sm:space-y-5">
+    
+    <div>
+      <h3 class="text-xl sm:text-2xl font-bold text-slate-800 mb-4 px-1">新着の回答コメント</h3>
+      <div id="responseList" class="space-y-4 sm:space-y-5">
+      </div>
     </div>
   </div>
 
@@ -52,7 +55,7 @@
       document.getElementById('storeTitle').innerText = `${targetStore} の回答データ`;
     } else {
       document.getElementById('storeTitle').innerText = '店舗名が指定されていません';
-      document.getElementById('targetStoreBadge').className = 'bg-red-100 text-red-800 text-sm font-semibold px-3 py-1 rounded-full';
+      document.getElementById('targetStoreBadge').className = 'bg-rose-50 text-rose-700 border border-rose-100 text-sm font-semibold px-4 py-1.5 rounded-full';
       document.getElementById('targetStoreBadge').innerText = 'エラー';
     }
 
@@ -62,7 +65,7 @@
 
     const renderResponses = () => {
       if (!targetStore) {
-        document.getElementById('responseList').innerHTML = '<p class="text-red-500 text-center py-4 text-base">URLに ?store=店舗名 を指定してください。</p>';
+        document.getElementById('responseList').innerHTML = '<p class="text-rose-500 text-center py-8 text-base bg-white rounded-xl shadow-sm">URLに ?store=店舗名 を指定してください。</p>';
         return;
       }
 
@@ -82,23 +85,23 @@
       filtered.forEach(data => {
         const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '送信中...';
         const npsLabel = data.nps >= 9 ? '推奨者' : data.nps >= 7 ? '中立者' : '期待未達者';
-        // NPSによって背景色と左枠線の色を変える
-        const bgColor = data.nps >= 9 ? 'bg-green-50 border-green-500' : data.nps >= 7 ? 'bg-yellow-50 border-yellow-500' : 'bg-red-50 border-red-500';
+        const bgColor = data.nps >= 9 ? 'bg-emerald-50 border-emerald-400' : data.nps >= 7 ? 'bg-amber-50 border-amber-400' : 'bg-rose-50 border-rose-400';
+        const textColor = data.nps >= 9 ? 'text-emerald-800' : data.nps >= 7 ? 'text-amber-800' : 'text-rose-800';
         
         html += `
-          <div class="p-4 sm:p-5 rounded-xl shadow-sm border-l-4 ${bgColor}">
-            <div class="flex flex-col sm:flex-row sm:justify-between text-sm text-gray-500 mb-2 gap-1">
+          <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
+            <div class="flex flex-col sm:flex-row sm:justify-between text-sm text-slate-500 mb-3 gap-1 font-medium">
               <span>${date}</span>
               <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
             </div>
             <div class="mb-3">
-              <span class="bg-white text-gray-800 font-bold px-3 py-1 rounded text-sm sm:text-base border">NPS: ${data.nps}（${npsLabel}）</span>
+              <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-sm sm:text-base ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
             </div>
-            <p class="text-gray-800 text-base sm:text-lg mt-2 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
+            <p class="text-slate-800 text-base sm:text-lg mt-3 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
           </div>
         `;
       });
-      document.getElementById('responseList').innerHTML = html || '<p class="text-gray-500 text-center py-4 text-base">まだ回答がありません</p>';
+      document.getElementById('responseList').innerHTML = html || '<p class="text-slate-500 text-center py-8 text-base bg-white rounded-xl shadow-sm">まだ回答がありません</p>';
     };
 
     onSnapshot(collection(db, "surveys"), (snapshot) => {
