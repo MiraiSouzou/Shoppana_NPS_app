@@ -92,8 +92,8 @@
         
         html += `
           <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
-            <div class="flex justify-between items-center gap-3 sm:gap-4">
-              <div class="space-y-3 flex-1">
+            <div class="flex items-center w-full gap-3 sm:gap-4">
+              <div class="space-y-3">
                 <div class="flex flex-col sm:flex-row sm:items-center text-sm text-slate-500 gap-1 font-medium">
                   <span>${date}</span>
                   <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
@@ -102,7 +102,9 @@
                   <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-sm sm:text-base ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
                 </div>
               </div>
-              <img src="${iconFile}" alt="${npsLabel}アイコン" class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 object-contain">
+              <div class="flex-1 flex justify-center items-center min-w-[60px]">
+                <img src="${iconFile}" alt="${npsLabel}アイコン" class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 object-contain">
+              </div>
             </div>
             <p class="text-slate-800 text-base sm:text-lg mt-3 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
           </div>
