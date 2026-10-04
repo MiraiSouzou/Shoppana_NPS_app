@@ -115,7 +115,6 @@
           editBtn.disabled = true;
 
           try {
-            // 過去のアンケートの店舗名も一括更新
             const q = query(collection(db, "surveys"), where("store", "==", oldName));
             const querySnapshot = await getDocs(q);
             
@@ -123,7 +122,6 @@
             querySnapshot.forEach((document) => {
               batch.update(document.ref, { store: trimmedNewName });
             });
-            // 店舗自体の名前も更新
             batch.update(doc(db, "stores", storeId), { name: trimmedNewName });
             
             await batch.commit();
@@ -198,8 +196,9 @@
           <td class="p-4 font-bold text-indigo-600 align-middle">${npsScore}</td>
         </tr>`;
 
+        // 背景色を白に変更し、枠線と影を強調
         managementHtml += `
-          <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 hover:shadow-sm transition-shadow">
+          <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-300 shadow-sm hover:shadow-md transition-shadow">
             <div class="flex items-center overflow-hidden mr-2">
               ${mGroupBadge}
               <span class="text-sm font-bold text-slate-800 truncate" title="${escapeHTML(store.name)}">${escapeHTML(store.name)}</span>
