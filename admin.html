@@ -11,8 +11,10 @@
   <div class="max-w-5xl mx-auto space-y-8">
     
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
-      <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight">店舗の管理 (追加)</h2>
-      <div class="flex flex-col sm:flex-row gap-3">
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight">店舗の管理</h2>
+      
+      <!-- 追加フォーム -->
+      <div class="flex flex-col sm:flex-row gap-3 mb-8">
         <select id="newStoreGroup" class="p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-slate-500 transition-shadow text-base sm:w-48">
           <option value="A">Aグループ</option>
           <option value="B">Bグループ</option>
@@ -20,6 +22,14 @@
         </select>
         <input type="text" id="newStoreName" class="flex-1 p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-slate-500 transition-shadow text-base" placeholder="新しい店舗名を入力">
         <button id="addStoreBtn" class="bg-slate-800 text-white font-bold px-8 py-3 sm:py-4 rounded-xl shadow hover:bg-slate-900 transition-all">店舗を追加</button>
+      </div>
+
+      <!-- 登録済み店舗一覧と削除 -->
+      <div class="border-t border-slate-100 pt-6">
+        <h3 class="text-base font-bold text-slate-700 mb-4">登録済みの店舗 (削除)</h3>
+        <div id="storeManagementList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <!-- 動的追加 -->
+        </div>
       </div>
     </div>
 
@@ -35,7 +45,6 @@
               <th class="p-4 font-semibold">店舗名</th>
               <th class="p-4 font-semibold">回答数</th>
               <th class="p-4 font-semibold">NPSスコア</th>
-              <th class="p-4 font-semibold text-center w-24">操作</th>
             </tr>
           </thead>
           <tbody id="tableBody" class="text-slate-800 divide-y divide-slate-100">
@@ -82,7 +91,7 @@
     });
 
     // 店舗と関連アンケートの削除
-    document.getElementById('tableBody').addEventListener('click', async (e) => {
+    document.getElementById('storeManagementList').addEventListener('click', async (e) => {
       const btn = e.target.closest('.delete-store-btn');
       if (btn) {
         const storeId = btn.dataset.id;
@@ -94,18 +103,15 @@
           btn.disabled = true;
 
           try {
-            // 1. この店舗に関連するアンケート回答を取得
             const q = query(collection(db, "surveys"), where("store", "==", storeName));
             const querySnapshot = await getDocs(q);
             
-            // 2. アンケート回答を一括削除（バッチ処理）
             const batch = writeBatch(db);
             querySnapshot.forEach((document) => {
               batch.delete(document.ref);
             });
             await batch.commit();
 
-            // 3. 最後に店舗自体を削除
             await deleteDoc(doc(db, "stores", storeId));
             alert(`店舗「${storeName}」と関連するアンケート結果を削除しました。`);
           } catch (error) {
@@ -123,6 +129,8 @@
 
     const renderDashboard = () => {
       let tableHtml = '';
+      let managementHtml = '';
+      
       // グループ名でソートして表示
       storesList.sort((a, b) => (a.group || '').localeCompare(b.group || '') || a.name.localeCompare(b.name)).forEach(store => {
         const storeSurveys = surveysList.filter(s => s.store === store.name);
@@ -133,18 +141,28 @@
         const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
         
         const groupBadge = store.group ? `<span class="bg-slate-200 text-slate-700 text-sm font-bold px-3 py-1 rounded-full inline-block text-center w-12">${store.group}</span>` : '<span class="text-slate-400 text-xs">未設定</span>';
+        const mGroupBadge = store.group ? `<span class="bg-slate-200 text-slate-700 text-xs font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">${store.group}</span>` : '';
 
         tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
           <td class="p-4 align-middle">${groupBadge}</td>
           <td class="p-4 font-bold text-slate-800 align-middle">${escapeHTML(store.name)}</td>
           <td class="p-4 font-medium text-slate-600 align-middle">${count}件</td>
           <td class="p-4 font-bold text-indigo-600 align-middle">${npsScore}</td>
-          <td class="p-4 text-center align-middle">
-            <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
-          </td>
         </tr>`;
+
+        managementHtml += `
+          <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 hover:shadow-sm transition-shadow">
+            <div class="flex items-center overflow-hidden mr-2">
+              ${mGroupBadge}
+              <span class="text-sm font-bold text-slate-800 truncate">${escapeHTML(store.name)}</span>
+            </div>
+            <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1.5 rounded transition-colors text-sm font-bold flex-shrink-0" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
+          </div>
+        `;
       });
-      document.getElementById('tableBody').innerHTML = tableHtml || '<tr><td colspan="5" class="p-6 text-center text-slate-500">店舗が登録されていません</td></tr>';
+      
+      document.getElementById('tableBody').innerHTML = tableHtml || '<tr><td colspan="4" class="p-6 text-center text-slate-500">店舗が登録されていません</td></tr>';
+      document.getElementById('storeManagementList').innerHTML = managementHtml || '<p class="text-slate-500 text-sm col-span-full">店舗が登録されていません</p>';
 
       const sortedSurveys = [...surveysList].sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
       let commentHtml = '';
