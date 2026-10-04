@@ -86,12 +86,18 @@
         </div>
       </div>
       
-      <div class="space-y-2">
-        <label class="text-sm font-bold text-slate-700">店舗用ダッシュボードURL</label>
-        <div class="flex gap-2">
-          <input type="text" id="qrUrlInput" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm text-slate-600 outline-none" readonly>
-          <button id="copyModalUrlBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-colors w-24 text-center">コピー</button>
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm font-bold text-slate-700">店舗用ダッシュボードURL</label>
+          <div class="flex gap-2 mt-2">
+            <input type="text" id="qrUrlInput" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm text-slate-600 outline-none" readonly>
+            <button id="copyModalUrlBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-colors w-24 text-center">コピー</button>
+          </div>
         </div>
+        <button id="downloadQrBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white px-4 py-3.5 rounded-xl text-sm font-bold transition-colors flex justify-center items-center gap-2 shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+          QRコードを画像としてダウンロード
+        </button>
       </div>
     </div>
   </div>
@@ -166,6 +172,7 @@
       if (e.target === document.getElementById('qrModal')) closeQrModal();
     });
 
+    // URLコピー機能
     document.getElementById('copyModalUrlBtn').addEventListener('click', () => {
       const url = document.getElementById('qrUrlInput').value;
       navigator.clipboard.writeText(url).then(() => {
@@ -179,6 +186,82 @@
           btn.classList.replace('hover:bg-emerald-700', 'hover:bg-indigo-700');
         }, 2000);
       });
+    });
+
+    // QRコード画像ダウンロード機能 (テキストを画像として合成)
+    document.getElementById('downloadQrBtn').addEventListener('click', () => {
+      const storeName = document.getElementById('qrStoreName').innerText;
+      const qrCanvas = document.querySelector('#qrcode canvas');
+      
+      if (!qrCanvas) {
+        alert('QRコードの生成が完了していません。もう一度お試しください。');
+        return;
+      }
+      
+      const size = qrCanvas.width;
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // 1. QRコード本体を描画
+      ctx.drawImage(qrCanvas, 0, 0);
+
+      // 2. 中央テキストの準備とサイズ計算
+      ctx.font = 'bold 12px "Noto Sans JP", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      let text = storeName;
+      let textWidth = ctx.measureText(text).width;
+      const maxWidth = 70;
+      
+      // テキストが長すぎる場合は省略記号を追加
+      if (textWidth > maxWidth) {
+        text = text.substring(0, 6) + '...';
+        textWidth = ctx.measureText(text).width;
+      }
+
+      const paddingX = 6;
+      const paddingY = 4;
+      const rectWidth = textWidth + paddingX * 2;
+      const rectHeight = 14 + paddingY * 2;
+      const rectX = (size - rectWidth) / 2;
+      const rectY = (size - rectHeight) / 2;
+      const cornerRadius = 4;
+
+      // 3. 背景の白枠を描画
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(rectX + cornerRadius, rectY);
+      ctx.lineTo(rectX + rectWidth - cornerRadius, rectY);
+      ctx.arcTo(rectX + rectWidth, rectY, rectX + rectWidth, rectY + cornerRadius, cornerRadius);
+      ctx.lineTo(rectX + rectWidth, rectY + rectHeight - cornerRadius);
+      ctx.arcTo(rectX + rectWidth, rectY + rectHeight, rectX + rectWidth - cornerRadius, rectY + rectHeight, cornerRadius);
+      ctx.lineTo(rectX + cornerRadius, rectY + rectHeight);
+      ctx.arcTo(rectX, rectY + rectHeight, rectX, rectY + rectHeight - cornerRadius, cornerRadius);
+      ctx.lineTo(rectX, rectY + cornerRadius);
+      ctx.arcTo(rectX, rectY, rectX + cornerRadius, rectY, cornerRadius);
+      ctx.closePath();
+      ctx.fill();
+      
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.stroke();
+
+      // 4. テキストを描画
+      ctx.fillStyle = '#1e293b';
+      ctx.fillText(text, size / 2, size / 2 + 1);
+
+      // 5. 画像としてダウンロード
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      // ダウンロードファイル名：店舗名_QR.png
+      a.download = `${storeName}_QR.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     });
 
     // 店舗の追加
