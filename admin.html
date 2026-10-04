@@ -56,7 +56,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDx8Q0of4f2AD-nChSIBmEr36Hn-2rQt-4",
@@ -81,17 +81,38 @@
       alert(`[${group}グループ] に ${name} を追加しました`);
     });
 
-    // 店舗の削除
+    // 店舗と関連アンケートの削除
     document.getElementById('tableBody').addEventListener('click', async (e) => {
       const btn = e.target.closest('.delete-store-btn');
       if (btn) {
         const storeId = btn.dataset.id;
         const storeName = btn.dataset.name;
-        if (confirm(`店舗「${storeName}」を一覧から削除してもよろしいですか？\n※この操作は取り消せません。なお、過去のアンケート回答データは保持されます。`)) {
+        
+        if (confirm(`店舗「${storeName}」を削除しますか？\n※注意：この操作は取り消せません。この店舗の【過去のアンケート回答データ】もすべて完全に削除されます。`)) {
+          const originalBtnText = btn.innerText;
+          btn.innerText = "削除中...";
+          btn.disabled = true;
+
           try {
+            // 1. この店舗に関連するアンケート回答を取得
+            const q = query(collection(db, "surveys"), where("store", "==", storeName));
+            const querySnapshot = await getDocs(q);
+            
+            // 2. アンケート回答を一括削除（バッチ処理）
+            const batch = writeBatch(db);
+            querySnapshot.forEach((document) => {
+              batch.delete(document.ref);
+            });
+            await batch.commit();
+
+            // 3. 最後に店舗自体を削除
             await deleteDoc(doc(db, "stores", storeId));
+            alert(`店舗「${storeName}」と関連するアンケート結果を削除しました。`);
           } catch (error) {
+            console.error(error);
             alert('削除中にエラーが発生しました。時間を置いて再度お試しください。');
+            btn.innerText = originalBtnText;
+            btn.disabled = false;
           }
         }
       }
@@ -161,7 +182,6 @@
     onSnapshot(collection(db, "stores"), (snapshot) => {
       storesList = [];
       snapshot.forEach(doc => {
-        // ドキュメントID (doc.id) を取得して削除時に利用できるようにする
         storesList.push({ id: doc.id, name: doc.data().name, group: doc.data().group });
       });
       renderDashboard();
