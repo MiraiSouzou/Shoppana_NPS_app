@@ -18,7 +18,7 @@
         <h3 class="text-lg font-bold text-indigo-700 border-b border-slate-100 pb-2">来場者情報</h3>
         
         <div class="flex flex-col">
-          <label class="text-sm font-bold mb-2">①あなたの性別を教えてください。</label>
+          <label class="text-sm font-bold mb-2 flex items-center">①あなたの性別を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
           <div class="flex gap-2 sm:gap-4">
             <label class="flex-1 flex items-center justify-center space-x-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="gender" value="男" class="w-5 h-5 text-slate-600 accent-slate-600" required><span class="text-sm sm:text-base font-medium">男</span></label>
             <label class="flex-1 flex items-center justify-center space-x-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="gender" value="女" class="w-5 h-5 text-slate-600 accent-slate-600"><span class="text-sm sm:text-base font-medium">女</span></label>
@@ -27,7 +27,7 @@
         </div>
 
         <div class="flex flex-col">
-          <label class="text-sm font-bold mb-2">②イベント来場時間を教えてください。</label>
+          <label class="text-sm font-bold mb-2 flex items-center">②イベント来場時間を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
           <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <label class="flex-1 flex items-center justify-center space-x-2 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="time" value="10:00～12:00" class="w-5 h-5 accent-slate-600" required><span class="font-medium">10：00～12：00</span></label>
             <label class="flex-1 flex items-center justify-center space-x-2 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="time" value="12:00～15:00" class="w-5 h-5 accent-slate-600"><span class="font-medium">12：00～15：00</span></label>
@@ -95,7 +95,7 @@
             <h3 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">店舗${index + 1}：${escapeHTML(store.name)}</h3>
             
             <div class="flex flex-col">
-              <label class="text-sm font-bold mb-2">家族や友人に、どの程度このお店をお薦めしたいと思いますか？</label>
+              <label class="text-sm font-bold mb-2 flex items-center">家族や友人に、どの程度このお店をお薦めしたいと思いますか？<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
               <select id="nps_${store.id}" class="text-base p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-500 outline-none transition-shadow" required>
                 <option value="">選択してください (1〜10)</option>
                 <option value="1">1 (全く思わない)</option><option value="2">2</option><option value="3">3</option>
@@ -106,7 +106,7 @@
             </div>
 
             <div class="flex flex-col">
-              <label class="text-sm font-bold mb-2">その点数をつけた理由を教えてください。</label>
+              <label class="text-sm font-bold mb-2 flex items-center">その点数をつけた理由を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
               <textarea id="reason_${store.id}" rows="3" class="text-base p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-500 outline-none transition-shadow" placeholder="お店の良かった点、改善してほしい点など自由にご記入ください" required></textarea>
             </div>
           </div>
