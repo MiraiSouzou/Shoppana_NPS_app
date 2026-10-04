@@ -24,9 +24,9 @@
         <button id="addStoreBtn" class="bg-slate-800 text-white font-bold px-8 py-3 sm:py-4 rounded-xl shadow hover:bg-slate-900 transition-all">店舗を追加</button>
       </div>
 
-      <!-- 登録済み店舗一覧と削除 -->
+      <!-- 登録済み店舗一覧 -->
       <div class="border-t border-slate-100 pt-6">
-        <h3 class="text-base font-bold text-slate-700 mb-4">登録済みの店舗 (削除)</h3>
+        <h3 class="text-base font-bold text-slate-700 mb-4">登録済みの店舗 (編集・削除)</h3>
         <div id="storeManagementList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <!-- 動的追加 -->
         </div>
@@ -90,17 +90,55 @@
       alert(`[${group}グループ] に ${name} を追加しました`);
     });
 
-    // 店舗と関連アンケートの削除
+    // 店舗の編集と削除 (イベント委譲)
     document.getElementById('storeManagementList').addEventListener('click', async (e) => {
-      const btn = e.target.closest('.delete-store-btn');
-      if (btn) {
-        const storeId = btn.dataset.id;
-        const storeName = btn.dataset.name;
+      // 編集ボタンの処理
+      const editBtn = e.target.closest('.edit-store-btn');
+      if (editBtn) {
+        const storeId = editBtn.dataset.id;
+        const oldName = editBtn.dataset.name;
+        const newName = prompt(`「${oldName}」の新しい店舗名を入力してください:`, oldName);
+
+        if (newName && newName.trim() !== "" && newName !== oldName) {
+          const trimmedNewName = newName.trim();
+          const originalBtnText = editBtn.innerText;
+          editBtn.innerText = "更新中...";
+          editBtn.disabled = true;
+
+          try {
+            // 過去のアンケートの店舗名も一括更新
+            const q = query(collection(db, "surveys"), where("store", "==", oldName));
+            const querySnapshot = await getDocs(q);
+            
+            const batch = writeBatch(db);
+            querySnapshot.forEach((document) => {
+              batch.update(document.ref, { store: trimmedNewName });
+            });
+            // 店舗自体の名前も更新
+            batch.update(doc(db, "stores", storeId), { name: trimmedNewName });
+            
+            await batch.commit();
+            alert(`店舗名を「${trimmedNewName}」に更新しました。`);
+          } catch (error) {
+            console.error(error);
+            alert('更新中にエラーが発生しました。時間を置いて再度お試しください。');
+            editBtn.innerText = originalBtnText;
+            editBtn.disabled = false;
+          }
+        }
+        return;
+      }
+
+      // 削除ボタンの処理
+      const deleteBtn = e.target.closest('.delete-store-btn');
+      if (deleteBtn) {
+        const storeId = deleteBtn.dataset.id;
+        const storeName = deleteBtn.dataset.name;
         
         if (confirm(`店舗「${storeName}」を削除しますか？\n※注意：この操作は取り消せません。この店舗の【過去のアンケート回答データ】もすべて完全に削除されます。`)) {
-          const originalBtnText = btn.innerText;
-          btn.innerText = "削除中...";
-          btn.disabled = true;
+          const originalBtnText = deleteBtn.innerText;
+          deleteBtn.innerText = "削除中...";
+          deleteBtn.disabled = true;
 
           try {
             const q = query(collection(db, "surveys"), where("store", "==", storeName));
@@ -117,8 +155,8 @@
           } catch (error) {
             console.error(error);
             alert('削除中にエラーが発生しました。時間を置いて再度お試しください。');
-            btn.innerText = originalBtnText;
-            btn.disabled = false;
+            deleteBtn.innerText = originalBtnText;
+            deleteBtn.disabled = false;
           }
         }
       }
@@ -154,9 +192,12 @@
           <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 hover:shadow-sm transition-shadow">
             <div class="flex items-center overflow-hidden mr-2">
               ${mGroupBadge}
-              <span class="text-sm font-bold text-slate-800 truncate">${escapeHTML(store.name)}</span>
+              <span class="text-sm font-bold text-slate-800 truncate" title="${escapeHTML(store.name)}">${escapeHTML(store.name)}</span>
             </div>
-            <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1.5 rounded transition-colors text-sm font-bold flex-shrink-0" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
+            <div class="flex space-x-1 flex-shrink-0">
+              <button class="edit-store-btn text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">編集</button>
+              <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
+            </div>
           </div>
         `;
       });
