@@ -13,7 +13,7 @@
     
     <form id="surveyForm" class="space-y-6">
       
-      <!-- 基本情報エリア（1回のみ入力） -->
+      <!-- 基本情報エリア -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-8 space-y-6">
         <h3 class="text-lg font-bold text-indigo-700 border-b border-slate-100 pb-2">来場者情報</h3>
         
@@ -35,7 +35,7 @@
         </div>
       </div>
 
-      <!-- 店舗ごとの評価エリア（動的生成） -->
+      <!-- 店舗ごとの評価エリア -->
       <div id="storesArea" class="space-y-6">
         <p class="text-center text-slate-500 py-8">対象店舗を読み込み中...</p>
       </div>
@@ -125,9 +125,9 @@
       submitBtn.disabled = true;
 
       try {
-        // 全店舗のデータを分割してFirestoreに保存
         const promises = targetStores.map(store => {
           return addDoc(collection(db, "surveys"), {
+            storeId: store.id,
             store: store.name,
             gender: gender,
             time: time,
