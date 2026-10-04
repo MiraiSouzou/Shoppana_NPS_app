@@ -176,39 +176,71 @@
       let tableHtml = '';
       let managementHtml = '';
       
-      // グループ名でソートして表示
-      storesList.sort((a, b) => (a.group || '').localeCompare(b.group || '') || a.name.localeCompare(b.name)).forEach(store => {
-        const storeSurveys = surveysList.filter(s => s.store === store.name);
-        const count = storeSurveys.length;
-        
-        const promoters = storeSurveys.filter(s => s.nps >= 9).length;
-        const detractors = storeSurveys.filter(s => s.nps <= 6).length;
-        const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
-        
-        const badgeColorClass = getGroupBadgeColor(store.group);
-        const groupBadge = store.group ? `<span class="${badgeColorClass} text-sm font-bold px-3 py-1 rounded-full inline-block text-center w-12">${store.group}</span>` : '<span class="text-slate-400 text-xs">未設定</span>';
-        const mGroupBadge = store.group ? `<span class="${badgeColorClass} text-xs font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">${store.group}</span>` : '';
+      // グループごとに店舗を分類
+      const groupedStores = {};
+      storesList.forEach(store => {
+        const g = store.group || '未設定';
+        if (!groupedStores[g]) groupedStores[g] = [];
+        groupedStores[g].push(store);
+      });
 
-        tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="p-4 align-middle">${groupBadge}</td>
-          <td class="p-4 font-bold text-slate-800 align-middle">${escapeHTML(store.name)}</td>
-          <td class="p-4 font-medium text-slate-600 align-middle">${count}件</td>
-          <td class="p-4 font-bold text-indigo-600 align-middle">${npsScore}</td>
-        </tr>`;
+      const groupKeys = Object.keys(groupedStores).sort();
+      
+      groupKeys.forEach(groupKey => {
+        const storesInGroup = groupedStores[groupKey];
+        storesInGroup.sort((a, b) => a.name.localeCompare(b.name));
 
-        // 背景色を白に変更し、枠線と影を強調
-        managementHtml += `
-          <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-300 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-center overflow-hidden mr-2">
-              ${mGroupBadge}
-              <span class="text-sm font-bold text-slate-800 truncate" title="${escapeHTML(store.name)}">${escapeHTML(store.name)}</span>
+        let groupTotalSurveys = 0;
+        let groupTotalPromoters = 0;
+        let groupTotalDetractors = 0;
+
+        storesInGroup.forEach(store => {
+          const storeSurveys = surveysList.filter(s => s.store === store.name);
+          const count = storeSurveys.length;
+          
+          const promoters = storeSurveys.filter(s => s.nps >= 9).length;
+          const detractors = storeSurveys.filter(s => s.nps <= 6).length;
+          const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
+          
+          groupTotalSurveys += count;
+          groupTotalPromoters += promoters;
+          groupTotalDetractors += detractors;
+          
+          const badgeColorClass = getGroupBadgeColor(store.group);
+          const groupBadge = store.group ? `<span class="${badgeColorClass} text-sm font-bold px-3 py-1 rounded-full inline-block text-center w-12">${store.group}</span>` : '<span class="text-slate-400 text-xs">未設定</span>';
+          const mGroupBadge = store.group ? `<span class="${badgeColorClass} text-xs font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">${store.group}</span>` : '';
+
+          tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-4 align-middle border-b border-slate-100">${groupBadge}</td>
+            <td class="p-4 font-bold text-slate-800 align-middle border-b border-slate-100">${escapeHTML(store.name)}</td>
+            <td class="p-4 font-medium text-slate-600 align-middle border-b border-slate-100">${count}件</td>
+            <td class="p-4 font-bold text-indigo-600 align-middle border-b border-slate-100">${npsScore}</td>
+          </tr>`;
+
+          managementHtml += `
+            <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-300 shadow-sm hover:shadow-md transition-shadow">
+              <div class="flex items-center overflow-hidden mr-2">
+                ${mGroupBadge}
+                <span class="text-sm font-bold text-slate-800 truncate" title="${escapeHTML(store.name)}">${escapeHTML(store.name)}</span>
+              </div>
+              <div class="flex space-x-1 flex-shrink-0">
+                <button class="edit-store-btn text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">編集</button>
+                <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
+              </div>
             </div>
-            <div class="flex space-x-1 flex-shrink-0">
-              <button class="edit-store-btn text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">編集</button>
-              <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
-            </div>
-          </div>
-        `;
+          `;
+        });
+
+        // グループ合計行の追加
+        if (storesInGroup.length > 0) {
+          const groupNpsScore = groupTotalSurveys === 0 ? 0 : Math.round(((groupTotalPromoters / groupTotalSurveys) - (groupTotalDetractors / groupTotalSurveys)) * 100);
+          tableHtml += `<tr class="bg-slate-100 border-b-2 border-slate-200">
+            <td class="p-4 align-middle"></td>
+            <td class="p-4 font-bold text-slate-700 align-middle text-right">【${groupKey}グループ 合計】</td>
+            <td class="p-4 font-bold text-slate-800 align-middle">${groupTotalSurveys}件</td>
+            <td class="p-4 font-bold text-indigo-700 align-middle">${groupNpsScore}</td>
+          </tr>`;
+        }
       });
       
       document.getElementById('tableBody').innerHTML = tableHtml || '<tr><td colspan="4" class="p-6 text-center text-slate-500">店舗が登録されていません</td></tr>';
