@@ -12,7 +12,7 @@
 <body class="bg-slate-50 p-4 sm:p-8 font-sans relative" style="font-family: 'Noto Sans JP', sans-serif;">
   <div class="max-w-5xl mx-auto space-y-8">
     
-    <!-- 新設：グループ用QRコードセクション -->
+    <!-- グループ用QRコードセクション -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8" id="groupQrSection">
       <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-4 tracking-tight">来場者用アンケートQRコード (グループ別)</h2>
       <p class="text-sm text-slate-500 mb-6">会場に掲示するための、グループ別一括アンケート用QRコードです。カードをクリックして取得してください。</p>
@@ -154,7 +154,7 @@
       }
     };
 
-    // QRモーダルの制御 (グループ・店舗 共通)
+    // QRモーダルの制御
     const openQrModal = (type, targetId, targetName) => {
       const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
       let targetUrl = '';
@@ -203,7 +203,6 @@
       if (e.target === document.getElementById('qrModal')) closeQrModal();
     });
 
-    // グループ用カードのクリックイベント
     document.getElementById('groupQrSection').addEventListener('click', (e) => {
       const card = e.target.closest('.group-card');
       if (card) {
@@ -212,7 +211,6 @@
       }
     });
 
-    // URLコピー機能
     document.getElementById('copyModalUrlBtn').addEventListener('click', () => {
       const url = document.getElementById('qrUrlInput').value;
       navigator.clipboard.writeText(url).then(() => {
@@ -228,7 +226,6 @@
       });
     });
 
-    // QRコード画像ダウンロード機能
     document.getElementById('downloadQrBtn').addEventListener('click', () => {
       const targetName = document.getElementById('qrTargetName').innerText;
       const qrCanvas = document.querySelector('#qrcode canvas');
@@ -244,10 +241,8 @@
       canvas.height = size;
       const ctx = canvas.getContext('2d');
 
-      // 1. QRコード本体を描画
       ctx.drawImage(qrCanvas, 0, 0);
 
-      // 2. 中央テキストの準備とサイズ計算
       ctx.font = 'bold 12px "Noto Sans JP", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -269,7 +264,6 @@
       const rectY = (size - rectHeight) / 2;
       const cornerRadius = 4;
 
-      // 3. 背景の白枠を描画
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.moveTo(rectX + cornerRadius, rectY);
@@ -288,11 +282,9 @@
       ctx.strokeStyle = '#e2e8f0';
       ctx.stroke();
 
-      // 4. テキストを描画
       ctx.fillStyle = '#1e293b';
       ctx.fillText(text, size / 2, size / 2 + 1);
 
-      // 5. 画像としてダウンロード
       const dataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
@@ -302,7 +294,6 @@
       document.body.removeChild(a);
     });
 
-    // 店舗の追加
     document.getElementById('addStoreBtn').addEventListener('click', async () => {
       const name = document.getElementById('newStoreName').value.trim();
       const group = document.getElementById('newStoreGroup').value;
@@ -312,7 +303,6 @@
       alert(`[${group}グループ] に ${name} を追加しました`);
     });
 
-    // 店舗の編集・削除・カードクリック
     document.getElementById('storeManagementList').addEventListener('click', async (e) => {
       const editBtn = e.target.closest('.edit-store-btn');
       const deleteBtn = e.target.closest('.delete-store-btn');
@@ -386,6 +376,30 @@
         openQrModal('store', card.dataset.id, card.dataset.name);
       }
     });
+
+    // 新着コメントの削除処理
+    document.getElementById('adminCommentList').addEventListener('click', async (e) => {
+      const deleteBtn = e.target.closest('.delete-comment-btn');
+      if (deleteBtn) {
+        const commentId = deleteBtn.dataset.id;
+        
+        if (confirm('この回答データを削除しますか？\n※注意：この操作は取り消せません。集計データ(回答数・NPSスコア)からも除外されます。')) {
+          const originalBtnText = deleteBtn.innerText;
+          deleteBtn.innerText = "削除中...";
+          deleteBtn.disabled = true;
+
+          try {
+            await deleteDoc(doc(db, "surveys", commentId));
+          } catch (error) {
+            console.error(error);
+            alert('削除中にエラーが発生しました。時間を置いて再度お試しください。');
+            deleteBtn.innerText = originalBtnText;
+            deleteBtn.disabled = false;
+          }
+        }
+      }
+    });
+
 
     let storesList = [];
     let surveysList = [];
@@ -472,8 +486,9 @@
         const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
         const iconFile = data.nps >= 9 ? 'lunchmap01.webp' : data.nps >= 7 ? 'lunchmap02.webp' : 'lunchmap03.webp';
         
+        // 各回答に削除ボタンを追加 (右下に配置)
         commentHtml += `
-          <div class="p-5 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
+          <div class="p-5 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md relative group">
             <div class="flex justify-between items-center w-full gap-3 sm:gap-4">
               <div class="space-y-3 flex-1">
                 <div class="flex flex-col sm:flex-row sm:items-center text-sm text-slate-500 gap-2 font-medium">
@@ -488,7 +503,9 @@
                 <img src="${iconFile}" alt="${npsLabel}アイコン" class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 object-contain">
               </div>
             </div>
-            <p class="text-slate-800 text-base mt-3 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
+            <p class="text-slate-800 text-base mt-3 whitespace-pre-wrap leading-relaxed pb-4">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
+            
+            <button class="delete-comment-btn absolute bottom-3 right-4 text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1 rounded transition-colors text-xs font-bold" data-id="${data.id}">削除</button>
           </div>
         `;
       });
@@ -505,7 +522,11 @@
 
     onSnapshot(collection(db, "surveys"), (snapshot) => {
       surveysList = [];
-      snapshot.forEach(doc => surveysList.push(doc.data()));
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        data.id = doc.id; // 削除処理用にドキュメントIDを保持
+        surveysList.push(data);
+      });
       renderDashboard();
     });
   </script>
