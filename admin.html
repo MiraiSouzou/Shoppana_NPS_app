@@ -6,8 +6,10 @@
   <title>管理者ダッシュボード</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- QRコード生成ライブラリ -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-<body class="bg-slate-50 p-4 sm:p-8 font-sans" style="font-family: 'Noto Sans JP', sans-serif;">
+<body class="bg-slate-50 p-4 sm:p-8 font-sans relative" style="font-family: 'Noto Sans JP', sans-serif;">
   <div class="max-w-5xl mx-auto space-y-8">
     
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
@@ -26,7 +28,7 @@
 
       <!-- 登録済み店舗一覧 -->
       <div class="border-t border-slate-100 pt-6">
-        <h3 class="text-base font-bold text-slate-700 mb-4">登録済みの店舗 (URLコピー・編集・削除)</h3>
+        <h3 class="text-base font-bold text-slate-700 mb-4">登録済みの店舗 (カードクリックでQRコード表示)</h3>
         <div id="storeManagementList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <!-- 動的追加 -->
         </div>
@@ -63,6 +65,31 @@
 
   </div>
 
+  <!-- QRコード表示用モーダル -->
+  <div id="qrModal" class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-200">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 sm:p-8 transform scale-95 transition-transform duration-200" id="qrModalContent">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-slate-800 truncate pr-2" id="qrStoreName">店舗名</h3>
+        <button id="closeQrBtn" class="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <p class="text-sm text-slate-500 mb-4">この店舗専用のダッシュボードへのアクセス情報です。</p>
+      
+      <div class="flex justify-center mb-6 bg-slate-50 p-6 rounded-xl border border-slate-100">
+        <div id="qrcode"></div>
+      </div>
+      
+      <div class="space-y-2">
+        <label class="text-sm font-bold text-slate-700">店舗用ダッシュボードURL</label>
+        <div class="flex gap-2">
+          <input type="text" id="qrUrlInput" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-sm text-slate-600 outline-none" readonly>
+          <button id="copyModalUrlBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition-colors w-24 text-center">コピー</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, where, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -89,6 +116,63 @@
       }
     };
 
+    // QRモーダルの制御
+    const openQrModal = (storeId, storeName) => {
+      const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
+      const targetUrl = `${baseUrl}shop.html?id=${storeId}`;
+      
+      document.getElementById('qrStoreName').innerText = storeName;
+      document.getElementById('qrUrlInput').value = targetUrl;
+      document.getElementById('qrcode').innerHTML = '';
+      
+      new QRCode(document.getElementById('qrcode'), {
+        text: targetUrl,
+        width: 160,
+        height: 160,
+        colorDark: "#1e293b",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      const modal = document.getElementById('qrModal');
+      modal.classList.remove('hidden');
+      // 少し遅延させてアニメーションを適用
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        document.getElementById('qrModalContent').classList.remove('scale-95');
+      }, 10);
+    };
+
+    const closeQrModal = () => {
+      const modal = document.getElementById('qrModal');
+      modal.classList.add('opacity-0');
+      document.getElementById('qrModalContent').classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200); // トランジション時間と合わせる
+    };
+
+    document.getElementById('closeQrBtn').addEventListener('click', closeQrModal);
+    document.getElementById('qrModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('qrModal')) closeQrModal();
+    });
+
+    document.getElementById('copyModalUrlBtn').addEventListener('click', () => {
+      const url = document.getElementById('qrUrlInput').value;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('copyModalUrlBtn');
+        btn.innerText = 'コピー完了';
+        btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
+        btn.classList.replace('hover:bg-indigo-700', 'hover:bg-emerald-700');
+        setTimeout(() => {
+          btn.innerText = 'コピー';
+          btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
+          btn.classList.replace('hover:bg-emerald-700', 'hover:bg-indigo-700');
+        }, 2000);
+      });
+    });
+
+
     // 店舗の追加
     document.getElementById('addStoreBtn').addEventListener('click', async () => {
       const name = document.getElementById('newStoreName').value.trim();
@@ -99,27 +183,13 @@
       alert(`[${group}グループ] に ${name} を追加しました`);
     });
 
-    // 店舗のURLコピー・編集・削除
+    // 店舗の編集・削除・カードクリック (イベント委譲)
     document.getElementById('storeManagementList').addEventListener('click', async (e) => {
-      
-      // URLコピーボタンの処理
-      const copyBtn = e.target.closest('.copy-url-btn');
-      if (copyBtn) {
-        const storeId = copyBtn.dataset.id;
-        // 現在のURL（admin.html）からディレクトリを取得し、shop.htmlのパスを生成
-        const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
-        const targetUrl = `${baseUrl}shop.html?id=${storeId}`;
-        
-        navigator.clipboard.writeText(targetUrl).then(() => {
-          alert('店舗の専用URLをコピーしました。\n\n' + targetUrl);
-        }).catch(() => {
-          alert('コピーに失敗しました。以下のURLを手動でコピーしてください。\n\n' + targetUrl);
-        });
-        return;
-      }
+      const editBtn = e.target.closest('.edit-store-btn');
+      const deleteBtn = e.target.closest('.delete-store-btn');
+      const card = e.target.closest('.store-card');
 
       // 編集ボタンの処理
-      const editBtn = e.target.closest('.edit-store-btn');
       if (editBtn) {
         const storeId = editBtn.dataset.id;
         const oldName = editBtn.dataset.name;
@@ -150,11 +220,10 @@
             editBtn.disabled = false;
           }
         }
-        return;
+        return; // イベント終了
       }
 
       // 削除ボタンの処理
-      const deleteBtn = e.target.closest('.delete-store-btn');
       if (deleteBtn) {
         const storeId = deleteBtn.dataset.id;
         const storeName = deleteBtn.dataset.name;
@@ -183,6 +252,12 @@
             deleteBtn.disabled = false;
           }
         }
+        return; // イベント終了
+      }
+
+      // カード自体がクリックされた場合（QRモーダルを開く）
+      if (card) {
+        openQrModal(card.dataset.id, card.dataset.name);
       }
     });
 
@@ -211,7 +286,6 @@
         let groupTotalDetractors = 0;
 
         storesInGroup.forEach(store => {
-          // IDまたは名前でフィルタリング (過去データへの互換性)
           const storeSurveys = surveysList.filter(s => s.storeId === store.id || s.store === store.name);
           const count = storeSurveys.length;
           
@@ -234,15 +308,15 @@
             <td class="p-4 font-bold text-indigo-600 align-middle border-b border-slate-100">${npsScore}</td>
           </tr>`;
 
+          // カード全体を clickable にし、専用クラス store-card を付与
           managementHtml += `
-            <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-slate-300 shadow-sm hover:shadow-md transition-shadow">
-              <div class="flex items-center overflow-hidden mr-2">
+            <div class="store-card cursor-pointer flex justify-between items-center bg-white p-3 rounded-xl border border-slate-300 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all group" data-id="${store.id}" data-name="${escapeHTML(store.name)}">
+              <div class="flex items-center overflow-hidden mr-2 pointer-events-none">
                 ${mGroupBadge}
-                <span class="text-sm font-bold text-slate-800 truncate" title="${escapeHTML(store.name)}">${escapeHTML(store.name)}</span>
+                <span class="text-sm font-bold text-slate-800 truncate group-hover:text-indigo-700 transition-colors" title="${escapeHTML(store.name)}">${escapeHTML(store.name)}</span>
               </div>
               <div class="flex space-x-1 flex-shrink-0">
-                <button class="copy-url-btn text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}">URL</button>
-                <button class="edit-store-btn text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">編集</button>
+                <button class="edit-store-btn text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">編集</button>
                 <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
               </div>
             </div>
