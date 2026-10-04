@@ -80,6 +80,15 @@
 
     const escapeHTML = str => (str || '').replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
 
+    const getGroupBadgeColor = (group) => {
+      switch(group) {
+        case 'A': return 'bg-blue-100 text-blue-800';
+        case 'B': return 'bg-orange-100 text-orange-800';
+        case 'C': return 'bg-purple-100 text-purple-800';
+        default: return 'bg-slate-200 text-slate-700';
+      }
+    };
+
     // 店舗の追加
     document.getElementById('addStoreBtn').addEventListener('click', async () => {
       const name = document.getElementById('newStoreName').value.trim();
@@ -178,8 +187,9 @@
         const detractors = storeSurveys.filter(s => s.nps <= 6).length;
         const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
         
-        const groupBadge = store.group ? `<span class="bg-slate-200 text-slate-700 text-sm font-bold px-3 py-1 rounded-full inline-block text-center w-12">${store.group}</span>` : '<span class="text-slate-400 text-xs">未設定</span>';
-        const mGroupBadge = store.group ? `<span class="bg-slate-200 text-slate-700 text-xs font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">${store.group}</span>` : '';
+        const badgeColorClass = getGroupBadgeColor(store.group);
+        const groupBadge = store.group ? `<span class="${badgeColorClass} text-sm font-bold px-3 py-1 rounded-full inline-block text-center w-12">${store.group}</span>` : '<span class="text-slate-400 text-xs">未設定</span>';
+        const mGroupBadge = store.group ? `<span class="${badgeColorClass} text-xs font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">${store.group}</span>` : '';
 
         tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
           <td class="p-4 align-middle">${groupBadge}</td>
