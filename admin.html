@@ -377,7 +377,6 @@
       }
     });
 
-    // 新着コメントの削除処理
     document.getElementById('adminCommentList').addEventListener('click', async (e) => {
       const deleteBtn = e.target.closest('.delete-comment-btn');
       if (deleteBtn) {
@@ -441,9 +440,15 @@
           const groupBadge = store.group ? `<span class="${badgeColorClass} text-sm font-bold px-3 py-1 rounded-full inline-block text-center w-12">${store.group}</span>` : '<span class="text-slate-400 text-xs">未設定</span>';
           const mGroupBadge = store.group ? `<span class="${badgeColorClass} text-xs font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">${store.group}</span>` : '';
 
+          // 店舗名にリンクを設定し、別タブで開く仕様に変更
           tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
             <td class="p-4 align-middle border-b border-slate-100">${groupBadge}</td>
-            <td class="p-4 font-bold text-slate-800 align-middle border-b border-slate-100">${escapeHTML(store.name)}</td>
+            <td class="p-4 font-bold text-slate-800 align-middle border-b border-slate-100">
+              <a href="shop.html?id=${store.id}" target="_blank" class="hover:text-indigo-600 hover:underline flex items-center gap-1 transition-colors" title="${escapeHTML(store.name)}のダッシュボードを開く">
+                ${escapeHTML(store.name)}
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+              </a>
+            </td>
             <td class="p-4 font-medium text-slate-600 align-middle border-b border-slate-100">${count}件</td>
             <td class="p-4 font-bold text-indigo-600 align-middle border-b border-slate-100">${npsScore}</td>
           </tr>`;
@@ -486,7 +491,6 @@
         const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
         const iconFile = data.nps >= 9 ? 'lunchmap01.webp' : data.nps >= 7 ? 'lunchmap02.webp' : 'lunchmap03.webp';
         
-        // 各回答に削除ボタンを追加 (右下に配置)
         commentHtml += `
           <div class="p-5 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md relative group">
             <div class="flex justify-between items-center w-full gap-3 sm:gap-4">
@@ -524,7 +528,7 @@
       surveysList = [];
       snapshot.forEach(doc => {
         const data = doc.data();
-        data.id = doc.id; // 削除処理用にドキュメントIDを保持
+        data.id = doc.id;
         surveysList.push(data);
       });
       renderDashboard();
