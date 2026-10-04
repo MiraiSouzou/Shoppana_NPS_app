@@ -13,6 +13,11 @@
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
       <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight">店舗の管理 (追加)</h2>
       <div class="flex flex-col sm:flex-row gap-3">
+        <select id="newStoreGroup" class="p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-slate-500 transition-shadow text-base sm:w-48">
+          <option value="A">Aグループ</option>
+          <option value="B">Bグループ</option>
+          <option value="C">Cグループ</option>
+        </select>
         <input type="text" id="newStoreName" class="flex-1 p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-slate-500 transition-shadow text-base" placeholder="新しい店舗名を入力">
         <button id="addStoreBtn" class="bg-slate-800 text-white font-bold px-8 py-3 sm:py-4 rounded-xl shadow hover:bg-slate-900 transition-all">店舗を追加</button>
       </div>
@@ -66,10 +71,11 @@
 
     document.getElementById('addStoreBtn').addEventListener('click', async () => {
       const name = document.getElementById('newStoreName').value.trim();
+      const group = document.getElementById('newStoreGroup').value;
       if (!name) return;
-      await addDoc(collection(db, "stores"), { name: name });
+      await addDoc(collection(db, "stores"), { name: name, group: group });
       document.getElementById('newStoreName').value = '';
-      alert(`${name} を追加しました`);
+      alert(`[${group}グループ] に ${name} を追加しました`);
     });
 
     let storesList = [];
@@ -77,16 +83,19 @@
 
     const renderDashboard = () => {
       let tableHtml = '';
-      storesList.forEach(storeName => {
-        const storeSurveys = surveysList.filter(s => s.store === storeName);
+      // グループ名でソートして表示
+      storesList.sort((a, b) => (a.group || '').localeCompare(b.group || '')).forEach(store => {
+        const storeSurveys = surveysList.filter(s => s.store === store.name);
         const count = storeSurveys.length;
         
         const promoters = storeSurveys.filter(s => s.nps >= 9).length;
         const detractors = storeSurveys.filter(s => s.nps <= 6).length;
         const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
         
+        const groupBadge = store.group ? `<span class="bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mr-3">${store.group}</span>` : '';
+
         tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="p-4 font-bold text-slate-800">${escapeHTML(storeName)}</td>
+          <td class="p-4 font-bold text-slate-800 flex items-center">${groupBadge}${escapeHTML(store.name)}</td>
           <td class="p-4 font-medium text-slate-600">${count}件</td>
           <td class="p-4 font-bold text-indigo-600">${npsScore}</td>
         </tr>`;
@@ -128,7 +137,9 @@
 
     onSnapshot(collection(db, "stores"), (snapshot) => {
       storesList = [];
-      snapshot.forEach(doc => storesList.push(doc.data().name));
+      snapshot.forEach(doc => {
+        storesList.push({ name: doc.data().name, group: doc.data().group });
+      });
       renderDashboard();
     });
 
