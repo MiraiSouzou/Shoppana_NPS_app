@@ -26,7 +26,7 @@
 
       <!-- 登録済み店舗一覧 -->
       <div class="border-t border-slate-100 pt-6">
-        <h3 class="text-base font-bold text-slate-700 mb-4">登録済みの店舗 (編集・削除)</h3>
+        <h3 class="text-base font-bold text-slate-700 mb-4">登録済みの店舗 (URLコピー・編集・削除)</h3>
         <div id="storeManagementList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <!-- 動的追加 -->
         </div>
@@ -99,8 +99,25 @@
       alert(`[${group}グループ] に ${name} を追加しました`);
     });
 
-    // 店舗の編集と削除 (イベント委譲)
+    // 店舗のURLコピー・編集・削除
     document.getElementById('storeManagementList').addEventListener('click', async (e) => {
+      
+      // URLコピーボタンの処理
+      const copyBtn = e.target.closest('.copy-url-btn');
+      if (copyBtn) {
+        const storeId = copyBtn.dataset.id;
+        // 現在のURL（admin.html）からディレクトリを取得し、shop.htmlのパスを生成
+        const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
+        const targetUrl = `${baseUrl}shop.html?id=${storeId}`;
+        
+        navigator.clipboard.writeText(targetUrl).then(() => {
+          alert('店舗の専用URLをコピーしました。\n\n' + targetUrl);
+        }).catch(() => {
+          alert('コピーに失敗しました。以下のURLを手動でコピーしてください。\n\n' + targetUrl);
+        });
+        return;
+      }
+
       // 編集ボタンの処理
       const editBtn = e.target.closest('.edit-store-btn');
       if (editBtn) {
@@ -176,7 +193,6 @@
       let tableHtml = '';
       let managementHtml = '';
       
-      // グループごとに店舗を分類
       const groupedStores = {};
       storesList.forEach(store => {
         const g = store.group || '未設定';
@@ -195,7 +211,8 @@
         let groupTotalDetractors = 0;
 
         storesInGroup.forEach(store => {
-          const storeSurveys = surveysList.filter(s => s.store === store.name);
+          // IDまたは名前でフィルタリング (過去データへの互換性)
+          const storeSurveys = surveysList.filter(s => s.storeId === store.id || s.store === store.name);
           const count = storeSurveys.length;
           
           const promoters = storeSurveys.filter(s => s.nps >= 9).length;
@@ -224,14 +241,14 @@
                 <span class="text-sm font-bold text-slate-800 truncate" title="${escapeHTML(store.name)}">${escapeHTML(store.name)}</span>
               </div>
               <div class="flex space-x-1 flex-shrink-0">
-                <button class="edit-store-btn text-blue-600 hover:text-blue-800 hover:bg-blue-100 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">編集</button>
+                <button class="copy-url-btn text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}">URL</button>
+                <button class="edit-store-btn text-blue-600 hover:text-blue-800 hover:bg-blue-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">編集</button>
                 <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-2 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
               </div>
             </div>
           `;
         });
 
-        // グループ合計行の追加
         if (storesInGroup.length > 0) {
           const groupNpsScore = groupTotalSurveys === 0 ? 0 : Math.round(((groupTotalPromoters / groupTotalSurveys) - (groupTotalDetractors / groupTotalSurveys)) * 100);
           tableHtml += `<tr class="bg-slate-100 border-b-2 border-slate-200">
