@@ -27,13 +27,15 @@
       <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight flex items-center">
         <span class="w-3 h-3 bg-sky-500 rounded-full mr-3 animate-pulse"></span> 全店舗ライブ集計
       </h2>
-      <div class="overflow-hidden rounded-xl border border-slate-200">
-        <table class="w-full text-left border-collapse">
+      <div class="overflow-x-auto rounded-xl border border-slate-200">
+        <table class="w-full text-left border-collapse min-w-max">
           <thead>
             <tr class="bg-slate-50 text-slate-600 text-sm uppercase tracking-wide border-b border-slate-200">
+              <th class="p-4 font-semibold w-24">グループ</th>
               <th class="p-4 font-semibold">店舗名</th>
               <th class="p-4 font-semibold">回答数</th>
               <th class="p-4 font-semibold">NPSスコア</th>
+              <th class="p-4 font-semibold text-center w-24">操作</th>
             </tr>
           </thead>
           <tbody id="tableBody" class="text-slate-800 divide-y divide-slate-100">
@@ -54,7 +56,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDx8Q0of4f2AD-nChSIBmEr36Hn-2rQt-4",
@@ -69,6 +71,7 @@
 
     const escapeHTML = str => (str || '').replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
 
+    // 店舗の追加
     document.getElementById('addStoreBtn').addEventListener('click', async () => {
       const name = document.getElementById('newStoreName').value.trim();
       const group = document.getElementById('newStoreGroup').value;
@@ -78,13 +81,29 @@
       alert(`[${group}グループ] に ${name} を追加しました`);
     });
 
+    // 店舗の削除
+    document.getElementById('tableBody').addEventListener('click', async (e) => {
+      const btn = e.target.closest('.delete-store-btn');
+      if (btn) {
+        const storeId = btn.dataset.id;
+        const storeName = btn.dataset.name;
+        if (confirm(`店舗「${storeName}」を一覧から削除してもよろしいですか？\n※この操作は取り消せません。なお、過去のアンケート回答データは保持されます。`)) {
+          try {
+            await deleteDoc(doc(db, "stores", storeId));
+          } catch (error) {
+            alert('削除中にエラーが発生しました。時間を置いて再度お試しください。');
+          }
+        }
+      }
+    });
+
     let storesList = [];
     let surveysList = [];
 
     const renderDashboard = () => {
       let tableHtml = '';
       // グループ名でソートして表示
-      storesList.sort((a, b) => (a.group || '').localeCompare(b.group || '')).forEach(store => {
+      storesList.sort((a, b) => (a.group || '').localeCompare(b.group || '') || a.name.localeCompare(b.name)).forEach(store => {
         const storeSurveys = surveysList.filter(s => s.store === store.name);
         const count = storeSurveys.length;
         
@@ -92,15 +111,19 @@
         const detractors = storeSurveys.filter(s => s.nps <= 6).length;
         const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
         
-        const groupBadge = store.group ? `<span class="bg-slate-200 text-slate-700 text-xs font-bold px-2 py-1 rounded mr-3">${store.group}</span>` : '';
+        const groupBadge = store.group ? `<span class="bg-slate-200 text-slate-700 text-sm font-bold px-3 py-1 rounded-full inline-block text-center w-12">${store.group}</span>` : '<span class="text-slate-400 text-xs">未設定</span>';
 
         tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="p-4 font-bold text-slate-800 flex items-center">${groupBadge}${escapeHTML(store.name)}</td>
-          <td class="p-4 font-medium text-slate-600">${count}件</td>
-          <td class="p-4 font-bold text-indigo-600">${npsScore}</td>
+          <td class="p-4 align-middle">${groupBadge}</td>
+          <td class="p-4 font-bold text-slate-800 align-middle">${escapeHTML(store.name)}</td>
+          <td class="p-4 font-medium text-slate-600 align-middle">${count}件</td>
+          <td class="p-4 font-bold text-indigo-600 align-middle">${npsScore}</td>
+          <td class="p-4 text-center align-middle">
+            <button class="delete-store-btn text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded transition-colors text-sm font-bold" data-id="${store.id}" data-name="${escapeHTML(store.name)}">削除</button>
+          </td>
         </tr>`;
       });
-      document.getElementById('tableBody').innerHTML = tableHtml || '<tr><td colspan="3" class="p-6 text-center text-slate-500">店舗が登録されていません</td></tr>';
+      document.getElementById('tableBody').innerHTML = tableHtml || '<tr><td colspan="5" class="p-6 text-center text-slate-500">店舗が登録されていません</td></tr>';
 
       const sortedSurveys = [...surveysList].sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
       let commentHtml = '';
@@ -138,7 +161,8 @@
     onSnapshot(collection(db, "stores"), (snapshot) => {
       storesList = [];
       snapshot.forEach(doc => {
-        storesList.push({ name: doc.data().name, group: doc.data().group });
+        // ドキュメントID (doc.id) を取得して削除時に利用できるようにする
+        storesList.push({ id: doc.id, name: doc.data().name, group: doc.data().group });
       });
       renderDashboard();
     });
