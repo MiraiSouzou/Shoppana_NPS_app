@@ -11,10 +11,11 @@
   <div class="max-w-2xl mx-auto">
     <h2 id="groupTitle" class="text-2xl sm:text-3xl font-bold text-center text-slate-800 mb-6 tracking-tight">Shoppana！アンケート</h2>
     
-    <form id="surveyForm" class="space-y-6">
+    <form id="surveyForm" class="space-y-8">
       
       <!-- 基本情報エリア -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-8 space-y-6">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-8 space-y-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
         <h3 class="text-lg font-bold text-indigo-700 border-b border-slate-100 pb-2">来場者情報</h3>
         
         <div class="flex flex-col">
@@ -36,11 +37,13 @@
       </div>
 
       <!-- 店舗ごとの評価エリア -->
-      <div id="storesArea" class="space-y-6">
+      <div id="storesArea" class="space-y-8">
         <p class="text-center text-slate-500 py-8">対象店舗を読み込み中...</p>
       </div>
 
-      <button id="submitBtn" type="submit" class="w-full bg-slate-800 text-white text-lg font-bold py-4 sm:py-5 rounded-2xl shadow-md hover:bg-slate-900 transition-all transform mt-2">すべての回答を送信する</button>
+      <div class="pt-4 pb-8">
+        <button id="submitBtn" type="submit" class="w-full bg-slate-800 text-white text-lg font-bold py-4 sm:py-5 rounded-2xl shadow-md hover:bg-slate-900 transition-all transform">すべての回答を送信する</button>
+      </div>
     </form>
   </div>
 
@@ -84,30 +87,36 @@
       if (targetStores.length === 0) {
         storesArea.innerHTML = '<div class="bg-rose-50 border border-rose-200 text-rose-700 p-6 rounded-2xl text-center font-bold">QRコード(URL)が正しくないか、このグループに店舗が登録されていません。</div>';
         submitBtn.disabled = true;
-        submitBtn.className = "w-full bg-slate-300 text-white text-lg font-bold py-4 rounded-2xl mt-2 cursor-not-allowed";
+        submitBtn.className = "w-full bg-slate-300 text-white text-lg font-bold py-4 rounded-2xl cursor-not-allowed";
         return;
       }
 
       let html = '';
       targetStores.forEach((store, index) => {
         html += `
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-8 space-y-5">
-            <h3 class="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">店舗${index + 1}：${escapeHTML(store.name)}</h3>
-            
-            <div class="flex flex-col">
-              <label class="text-sm font-bold mb-2 flex items-center">家族や友人に、どの程度このお店をお薦めしたいと思いますか？<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
-              <select id="nps_${store.id}" class="text-base p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-500 outline-none transition-shadow" required>
-                <option value="">選択してください (1〜10)</option>
-                <option value="1">1 (全く思わない)</option><option value="2">2</option><option value="3">3</option>
-                <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-                <option value="10">10 (非常に強く思う)</option>
-              </select>
+          <div class="bg-white rounded-2xl shadow-md border-2 border-slate-100 overflow-hidden">
+            <!-- ヘッダー部分で店舗の区切りを強調 -->
+            <div class="bg-slate-800 text-white p-4 sm:p-5 flex items-center gap-3">
+              <span class="bg-white text-slate-800 text-xs sm:text-sm font-bold px-2.5 py-1 rounded whitespace-nowrap">店舗 ${index + 1}</span>
+              <h3 class="text-lg sm:text-xl font-bold truncate">${escapeHTML(store.name)}</h3>
             </div>
+            
+            <div class="p-5 sm:p-8 space-y-6">
+              <div class="flex flex-col">
+                <label class="text-sm font-bold mb-2 flex items-center">家族や友人に、どの程度このお店をお薦めしたいと思いますか？<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
+                <select id="nps_${store.id}" class="text-base p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-500 outline-none transition-shadow" required>
+                  <option value="">選択してください (1〜10)</option>
+                  <option value="1">1 (全く思わない)</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                  <option value="10">10 (非常に強く思う)</option>
+                </select>
+              </div>
 
-            <div class="flex flex-col">
-              <label class="text-sm font-bold mb-2 flex items-center">その点数をつけた理由を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
-              <textarea id="reason_${store.id}" rows="3" class="text-base p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-500 outline-none transition-shadow" placeholder="お店の良かった点、改善してほしい点など自由にご記入ください" required></textarea>
+              <div class="flex flex-col">
+                <label class="text-sm font-bold mb-2 flex items-center">その点数をつけた理由を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
+                <textarea id="reason_${store.id}" rows="3" class="text-base p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-500 outline-none transition-shadow" placeholder="お店の良かった点、改善してほしい点など自由にご記入ください" required></textarea>
+              </div>
             </div>
           </div>
         `;
