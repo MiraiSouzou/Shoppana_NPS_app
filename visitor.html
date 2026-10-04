@@ -14,24 +14,28 @@
     <form id="surveyForm" class="space-y-8">
       
       <!-- 基本情報エリア -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-8 space-y-6 relative overflow-hidden">
-        <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
-        <h3 class="text-lg font-bold text-indigo-700 border-b border-slate-100 pb-2">来場者情報</h3>
-        
-        <div class="flex flex-col">
-          <label class="text-sm font-bold mb-2 flex items-center">①あなたの性別を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
-          <div class="flex gap-2 sm:gap-4">
-            <label class="flex-1 flex items-center justify-center space-x-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="gender" value="男" class="w-5 h-5 text-slate-600 accent-slate-600" required><span class="text-sm sm:text-base font-medium">男</span></label>
-            <label class="flex-1 flex items-center justify-center space-x-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="gender" value="女" class="w-5 h-5 text-slate-600 accent-slate-600"><span class="text-sm sm:text-base font-medium">女</span></label>
-            <label class="flex-1 flex items-center justify-center space-x-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="gender" value="無回答" class="w-5 h-5 text-slate-600 accent-slate-600"><span class="text-sm sm:text-base font-medium">無回答</span></label>
-          </div>
+      <div class="bg-white rounded-2xl shadow-md border-2 border-slate-100 overflow-hidden">
+        <div class="bg-slate-700 text-white p-4 sm:p-5 flex items-center gap-3">
+          <span class="bg-white text-slate-700 text-xs sm:text-sm font-bold px-2.5 py-1 rounded whitespace-nowrap">共通</span>
+          <h3 class="text-lg sm:text-xl font-bold">来場者情報</h3>
         </div>
+        
+        <div class="p-5 sm:p-8 space-y-6">
+          <div class="flex flex-col">
+            <label class="text-sm font-bold mb-2 flex items-center">①あなたの性別を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
+            <div class="flex gap-2 sm:gap-4">
+              <label class="flex-1 flex items-center justify-center space-x-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="gender" value="男" class="w-5 h-5 text-slate-600 accent-slate-600" required><span class="text-sm sm:text-base font-medium">男</span></label>
+              <label class="flex-1 flex items-center justify-center space-x-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="gender" value="女" class="w-5 h-5 text-slate-600 accent-slate-600"><span class="text-sm sm:text-base font-medium">女</span></label>
+              <label class="flex-1 flex items-center justify-center space-x-1.5 bg-slate-50 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="gender" value="無回答" class="w-5 h-5 text-slate-600 accent-slate-600"><span class="text-sm sm:text-base font-medium">無回答</span></label>
+            </div>
+          </div>
 
-        <div class="flex flex-col">
-          <label class="text-sm font-bold mb-2 flex items-center">②イベント来場時間を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
-          <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
-            <label class="flex-1 flex items-center justify-center space-x-2 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="time" value="10:00～12:00" class="w-5 h-5 accent-slate-600" required><span class="font-medium">10：00～12：00</span></label>
-            <label class="flex-1 flex items-center justify-center space-x-2 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="time" value="12:00～15:00" class="w-5 h-5 accent-slate-600"><span class="font-medium">12：00～15：00</span></label>
+          <div class="flex flex-col">
+            <label class="text-sm font-bold mb-2 flex items-center">②イベント来場時間を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+              <label class="flex-1 flex items-center justify-center space-x-2 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="time" value="10:00～12:00" class="w-5 h-5 accent-slate-600" required><span class="font-medium">10：00～12：00</span></label>
+              <label class="flex-1 flex items-center justify-center space-x-2 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"><input type="radio" name="time" value="12:00～15:00" class="w-5 h-5 accent-slate-600"><span class="font-medium">12：00～15：00</span></label>
+            </div>
           </div>
         </div>
       </div>
@@ -95,7 +99,6 @@
       targetStores.forEach((store, index) => {
         html += `
           <div class="bg-white rounded-2xl shadow-md border-2 border-slate-100 overflow-hidden">
-            <!-- ヘッダー部分で店舗の区切りを強調 -->
             <div class="bg-slate-800 text-white p-4 sm:p-5 flex items-center gap-3">
               <span class="bg-white text-slate-800 text-xs sm:text-sm font-bold px-2.5 py-1 rounded whitespace-nowrap">店舗 ${index + 1}</span>
               <h3 class="text-lg sm:text-xl font-bold truncate">${escapeHTML(store.name)}</h3>
