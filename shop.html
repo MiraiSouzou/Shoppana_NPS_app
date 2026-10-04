@@ -5,33 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>店舗ダッシュボード</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 p-4 font-sans">
-  <div class="max-w-2xl mx-auto space-y-6">
-    <!-- ヘッダー・自店舗表示 -->
-    <div class="bg-white rounded-xl shadow-md p-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 id="storeTitle" class="text-xl font-bold text-gray-800">店舗データを読み込み中...</h2>
-        <span id="targetStoreBadge" class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">専用ビュー</span>
+<body class="bg-slate-50 p-4 sm:p-6" style="font-family: 'Noto Sans JP', sans-serif;">
+  <div class="max-w-3xl mx-auto space-y-6 sm:space-y-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+        <h2 id="storeTitle" class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">店舗データを読み込み中...</h2>
+        <span id="targetStoreBadge" class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-base font-semibold px-4 py-1.5 rounded-full">専用ビュー</span>
       </div>
-      
-      <!-- サマリー集計 -->
-      <div class="grid grid-cols-2 gap-4 mt-4">
-        <div class="bg-blue-50 p-4 rounded-lg text-center">
-          <p class="text-sm text-gray-500">総回答数</p>
-          <p class="text-3xl font-bold text-blue-600"><span id="count">0</span><span class="text-lg text-blue-800">件</span></p>
+      <div class="grid grid-cols-2 gap-4 sm:gap-6 mt-2">
+        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
+          <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">総回答数</p>
+          <p class="text-5xl sm:text-6xl font-bold text-slate-800"><span id="count">0</span><span class="text-xl sm:text-2xl text-slate-500 ml-1 font-medium">件</span></p>
         </div>
-        <div class="bg-green-50 p-4 rounded-lg text-center">
-          <p class="text-sm text-gray-500">NPSスコア</p>
-          <p class="text-3xl font-bold text-green-600" id="npsScore">0</p>
+        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
+          <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">NPSスコア</p>
+          <p class="text-5xl sm:text-6xl font-bold text-indigo-600" id="npsScore">0</p>
         </div>
       </div>
     </div>
-
-    <!-- 個別回答リスト -->
-    <h3 class="text-lg font-bold text-gray-700">新着の回答コメント</h3>
-    <div id="responseList" class="space-y-4">
-      <!-- 動的に入る -->
+    
+    <div>
+      <h3 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-4 px-1">新着の回答コメント</h3>
+      <div id="responseList" class="space-y-4 sm:space-y-5">
+      </div>
     </div>
   </div>
 
@@ -50,33 +48,35 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // URLのパラメータから店舗名を取得する (例: shop.html?store=〇〇店舗)
     const urlParams = new URLSearchParams(window.location.search);
-    const targetStore = urlParams.get('store');
-
-    if (targetStore) {
-      document.getElementById('storeTitle').innerText = `${targetStore} の回答データ`;
-    } else {
-      document.getElementById('storeTitle').innerText = '店舗名が指定されていません';
-      document.getElementById('targetStoreBadge').className = 'bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full';
-      document.getElementById('targetStoreBadge').innerText = 'エラー';
-    }
+    const targetStoreId = urlParams.get('id');
+    
+    let allSurveys = [];
+    let storesList = [];
+    let currentStoreName = "";
 
     const escapeHTML = str => (str || '').replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
 
-    let allSurveys = [];
-
     const renderResponses = () => {
-      if (!targetStore) {
-        document.getElementById('responseList').innerHTML = '<p class="text-red-500 text-center py-4">URLに ?store=店舗名 を指定してください。</p>';
+      if (!targetStoreId) {
+        document.getElementById('responseList').innerHTML = '<p class="text-sky-500 text-center py-8 text-lg bg-white rounded-xl shadow-sm">URLに ?id=店舗ID を指定してください。</p>';
+        document.getElementById('storeTitle').innerText = '店舗が指定されていません';
         return;
       }
 
+      const storeData = storesList.find(s => s.id === targetStoreId);
+      if (storeData) {
+        currentStoreName = storeData.name;
+        document.getElementById('storeTitle').innerText = `${currentStoreName} の回答データ`;
+      } else {
+        document.getElementById('storeTitle').innerText = '店舗データを取得中...';
+      }
+
+      // IDまたは名前でフィルタリング (過去データへの互換性維持)
       const filtered = allSurveys
-        .filter(s => s.store === targetStore)
+        .filter(s => s.storeId === targetStoreId || s.store === currentStoreName)
         .sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
-      // サマリー更新 (NPS計算処理)
       const count = filtered.length;
       const promoters = filtered.filter(s => s.nps >= 9).length;
       const detractors = filtered.filter(s => s.nps <= 6).length;
@@ -85,30 +85,50 @@
       document.getElementById('count').innerText = count;
       document.getElementById('npsScore').innerText = npsScore;
 
-      // 個別回答リストの生成
       let html = '';
       filtered.forEach(data => {
-        const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP') : '送信中...';
+        const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '送信中...';
+        const npsLabel = data.nps >= 9 ? '推奨者' : data.nps >= 7 ? '中立者' : '期待未達者';
+        
+        const bgColor = data.nps >= 9 ? 'bg-pink-50 border-pink-400' : data.nps >= 7 ? 'bg-green-50 border-green-400' : 'bg-sky-50 border-sky-400';
+        const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
+        const iconFile = data.nps >= 9 ? 'lunchmap01.webp' : data.nps >= 7 ? 'lunchmap02.webp' : 'lunchmap03.webp';
+        
         html += `
-          <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${data.nps >= 9 ? 'border-green-500' : data.nps <= 6 ? 'border-red-500' : 'border-yellow-500'}">
-            <div class="flex justify-between text-xs text-gray-400 mb-2">
-              <span>${date}</span>
-              <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
+          <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
+            <div class="flex justify-between items-center w-full gap-3 sm:gap-4">
+              <div class="space-y-3 flex-1">
+                <div class="flex flex-col sm:flex-row sm:items-center text-base text-slate-500 gap-1 font-medium">
+                  <span>${date}</span>
+                  <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
+                </div>
+                <div>
+                  <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-base sm:text-lg ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
+                </div>
+              </div>
+              <div class="w-20 sm:w-24 flex justify-center items-center flex-shrink-0">
+                <img src="${iconFile}" alt="${npsLabel}アイコン" class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 object-contain">
+              </div>
             </div>
-            <div class="flex items-center space-x-3 mb-2">
-              <span class="bg-gray-100 text-gray-800 font-bold px-3 py-1 rounded-full text-sm">NPS: ${data.nps}</span>
-            </div>
-            <p class="text-gray-700 text-sm mt-2 whitespace-pre-wrap">${escapeHTML(data.reason) || '<span class="text-gray-400">理由の記入なし</span>'}</p>
+            <p class="text-slate-800 text-lg sm:text-xl mt-3 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
           </div>
         `;
       });
-      document.getElementById('responseList').innerHTML = html || '<p class="text-gray-500 text-center py-4">まだ回答がありません</p>';
+      document.getElementById('responseList').innerHTML = html || '<p class="text-slate-500 text-center py-8 text-lg bg-white rounded-xl shadow-sm">まだ回答がありません</p>';
     };
+
+    onSnapshot(collection(db, "stores"), (snapshot) => {
+      storesList = [];
+      snapshot.forEach(doc => {
+        storesList.push({ id: doc.id, name: doc.data().name });
+      });
+      renderResponses();
+    });
 
     onSnapshot(collection(db, "surveys"), (snapshot) => {
       allSurveys = [];
-      snapshot.forEach(doc => allSurveys.app(doc.data())); // Fix: push instead of app if needed, let's make sure it's correct
-      // Wait, let's fix the typo `.app` to `.push` in mind or rewrite cleanly
+      snapshot.forEach(doc => allSurveys.push(doc.data()));
+      renderResponses();
     });
   </script>
 </body>
