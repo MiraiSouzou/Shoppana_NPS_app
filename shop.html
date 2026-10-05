@@ -19,31 +19,35 @@
     }
   </style>
 </head>
-<body class="bg-slate-50 p-4 sm:p-6" style="font-family: 'Noto Sans JP', sans-serif;">
+<body class="bg-slate-50 p-3 sm:p-6" style="font-family: 'Noto Sans JP', sans-serif;">
   <div class="max-w-3xl mx-auto space-y-6 sm:space-y-8">
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-        <h2 id="storeTitle" class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">店舗データを読み込み中...</h2>
-        <div class="flex flex-wrap gap-2 items-center print-hidden">
-          <button id="printBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-sm transition-colors flex items-center gap-1 hidden">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-            PDF保存・印刷
-          </button>
-          <button id="downloadCsvBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-sm transition-colors flex items-center gap-1 hidden">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-            CSV
-          </button>
-          <span id="targetStoreBadge" class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-base font-semibold px-4 py-1.5 rounded-full">専用ビュー</span>
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 sm:p-8">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h2 id="storeTitle" class="text-2xl sm:text-4xl font-bold text-slate-800 tracking-tight leading-snug">店舗データを読み込み中...</h2>
+        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto print-hidden">
+          <span id="targetStoreBadge" class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-sm sm:text-base font-semibold px-4 py-2 rounded-full text-center sm:inline-block order-first sm:order-last w-max mb-2 sm:mb-0">専用ビュー</span>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button id="printBtn" class="flex-1 sm:flex-none justify-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-3 sm:py-2 rounded-xl sm:rounded-full shadow-sm transition-colors flex items-center gap-1.5 hidden">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+              PDF保存
+            </button>
+            <button id="downloadCsvBtn" class="flex-1 sm:flex-none justify-center bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-3 sm:py-2 rounded-xl sm:rounded-full shadow-sm transition-colors flex items-center gap-1.5 hidden">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              CSV出力
+            </button>
+          </div>
         </div>
       </div>
-      <div class="grid grid-cols-2 gap-4 sm:gap-6 mt-2">
-        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center items-center">
-          <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">総回答数</p>
-          <p class="text-5xl sm:text-6xl font-bold text-slate-800"><span id="count">0</span><span class="text-xl sm:text-2xl text-slate-500 ml-1 font-medium">件</span></p>
+      
+      <!-- スマホ表示時は1カラム、PC表示時は2カラムになるよう grid-cols-1 sm:grid-cols-2 に変更 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-2">
+        <div class="bg-slate-50 border border-slate-100 p-6 sm:p-8 rounded-xl text-center flex flex-col justify-center items-center shadow-sm">
+          <p class="text-sm sm:text-lg font-bold text-slate-500 mb-2">総回答数</p>
+          <p class="text-5xl sm:text-6xl font-bold text-slate-800"><span id="count">0</span><span class="text-xl sm:text-2xl text-slate-500 ml-1 font-bold">件</span></p>
         </div>
-        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl flex justify-center items-center gap-4 sm:gap-6">
+        <div class="bg-slate-50 border border-slate-100 p-6 sm:p-8 rounded-xl flex justify-center items-center gap-6 sm:gap-6 shadow-sm">
           <div class="flex flex-col items-center">
-            <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">NPSスコア</p>
+            <p class="text-sm sm:text-lg font-bold text-slate-500 mb-2">NPSスコア</p>
             <p class="text-5xl sm:text-6xl font-bold text-indigo-600" id="npsScore">0</p>
           </div>
           <img id="npsScoreIcon" src="" alt="総合評価アイコン" class="w-20 h-20 sm:w-24 sm:h-24 hidden object-contain">
@@ -52,7 +56,7 @@
     </div>
     
     <div>
-      <h3 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-4 px-1">新着の回答コメント</h3>
+      <h3 class="text-xl sm:text-2xl font-bold text-slate-800 mb-4 px-1 border-l-4 border-indigo-600 pl-3">新着の回答コメント</h3>
       <div id="responseList" class="space-y-4 sm:space-y-5">
       </div>
     </div>
@@ -112,7 +116,7 @@
 
     const renderResponses = () => {
       if (!targetStoreId) {
-        document.getElementById('responseList').innerHTML = '<p class="text-sky-500 text-center py-8 text-lg bg-white rounded-xl shadow-sm">URLに ?id=店舗ID を指定してください。</p>';
+        document.getElementById('responseList').innerHTML = '<div class="bg-white p-8 rounded-xl shadow-sm text-center border border-slate-100"><p class="text-sky-500 font-bold text-lg">URLに ?id=店舗ID を指定してください。</p></div>';
         document.getElementById('storeTitle').innerText = '店舗が指定されていません';
         return;
       }
@@ -172,26 +176,27 @@
         const iconFile = data.nps >= 9 ? 'Shoppana01.webp' : data.nps >= 7 ? 'Shoppana02.webp' : 'Shoppana03.webp';
         
         html += `
-          <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md break-inside-avoid">
-            <div class="flex justify-between items-center w-full gap-3 sm:gap-4">
+          <div class="p-4 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md break-inside-avoid">
+            <div class="flex justify-between items-start sm:items-center w-full gap-3 sm:gap-4">
               <div class="space-y-3 flex-1">
-                <div class="flex flex-col sm:flex-row sm:items-center text-base text-slate-500 gap-1 font-medium">
+                <div class="flex flex-col sm:flex-row sm:items-center text-xs sm:text-sm text-slate-500 gap-1 sm:gap-3 font-medium">
                   <span>${date}</span>
-                  <span>${escapeHTML(data.gender)} | ${escapeHTML(data.time)}</span>
+                  <span class="hidden sm:inline">|</span>
+                  <span>${escapeHTML(data.gender)} / ${escapeHTML(data.time)}</span>
                 </div>
                 <div>
-                  <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-base sm:text-lg ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
+                  <span class="bg-white border border-slate-200 font-bold px-3 py-1.5 rounded-lg text-sm sm:text-base ${textColor} shadow-sm inline-block">NPS: ${data.nps}（${npsLabel}）</span>
                 </div>
               </div>
-              <div class="w-20 sm:w-24 flex justify-center items-center flex-shrink-0">
-                <img src="${iconFile}" alt="${npsLabel}アイコン" class="w-14 h-14 sm:w-16 sm:h-16 flex-shrink-0 object-contain">
+              <div class="w-16 sm:w-20 flex justify-center items-center flex-shrink-0 pt-1 sm:pt-0">
+                <img src="${iconFile}" alt="${npsLabel}アイコン" class="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 object-contain">
               </div>
             </div>
-            <p class="text-slate-800 text-lg sm:text-xl mt-3 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
+            <p class="text-slate-800 text-base sm:text-lg mt-4 whitespace-pre-wrap leading-relaxed">${escapeHTML(data.reason) || '<span class="text-slate-400 italic">理由の記入なし</span>'}</p>
           </div>
         `;
       });
-      document.getElementById('responseList').innerHTML = html || '<p class="text-slate-500 text-center py-8 text-lg bg-white rounded-xl shadow-sm">まだ回答がありません</p>';
+      document.getElementById('responseList').innerHTML = html || '<div class="bg-white p-8 rounded-xl shadow-sm text-center border border-slate-100"><p class="text-slate-500 font-bold text-lg">まだ回答がありません</p></div>';
     };
 
     onSnapshot(collection(db, "stores"), (snapshot) => {
