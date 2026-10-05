@@ -6,13 +6,36 @@
   <title>店舗ダッシュボード</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* 印刷・PDF保存時の専用スタイル */
+    @media print {
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background-color: #f8fafc !important;
+      }
+      .print-hidden {
+        display: none !important;
+      }
+    }
+  </style>
 </head>
 <body class="bg-slate-50 p-4 sm:p-6" style="font-family: 'Noto Sans JP', sans-serif;">
   <div class="max-w-3xl mx-auto space-y-6 sm:space-y-8">
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
         <h2 id="storeTitle" class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">店舗データを読み込み中...</h2>
-        <span id="targetStoreBadge" class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-base font-semibold px-4 py-1.5 rounded-full">専用ビュー</span>
+        <div class="flex flex-wrap gap-2 items-center print-hidden">
+          <button id="printBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-sm transition-colors flex items-center gap-1 hidden">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+            PDF保存・印刷
+          </button>
+          <button id="downloadCsvBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2 rounded-full shadow-sm transition-colors flex items-center gap-1 hidden">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            CSV
+          </button>
+          <span id="targetStoreBadge" class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-base font-semibold px-4 py-1.5 rounded-full">専用ビュー</span>
+        </div>
       </div>
       <div class="grid grid-cols-2 gap-4 sm:gap-6 mt-2">
         <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
@@ -54,8 +77,38 @@
     let allSurveys = [];
     let storesList = [];
     let currentStoreName = "";
+    let currentStoreData = [];
 
     const escapeHTML = str => (str || '').replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
+
+    // PDF保存・印刷処理
+    document.getElementById('printBtn').addEventListener('click', () => {
+      window.print();
+    });
+
+    // CSVダウンロード処理
+    document.getElementById('downloadCsvBtn').addEventListener('click', () => {
+      if (currentStoreData.length === 0) return;
+      
+      const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+      let csv = "日時,性別,時間帯,NPSスコア,理由\n";
+      
+      currentStoreData.forEach(data => {
+        const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP') : '';
+        const reason = (data.reason || '').replace(/"/g, '""');
+        csv += `"${date}","${data.gender || ''}","${data.time || ''}","${data.nps || ''}","${reason}"\n`;
+      });
+      
+      const blob = new Blob([bom, csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentStoreName}_アンケート結果.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    });
 
     const renderResponses = () => {
       if (!targetStoreId) {
@@ -72,21 +125,32 @@
         document.getElementById('storeTitle').innerText = '店舗データを取得中...';
       }
 
-      // IDまたは名前でフィルタリング (過去データへの互換性維持)
-      const filtered = allSurveys
+      currentStoreData = allSurveys
         .filter(s => s.storeId === targetStoreId || s.store === currentStoreName)
         .sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
-      const count = filtered.length;
-      const promoters = filtered.filter(s => s.nps >= 9).length;
-      const detractors = filtered.filter(s => s.nps <= 6).length;
+      const count = currentStoreData.length;
+      
+      // データが存在する場合はボタンを表示
+      const csvBtn = document.getElementById('downloadCsvBtn');
+      const printBtn = document.getElementById('printBtn');
+      if (count > 0) {
+        csvBtn.classList.remove('hidden');
+        printBtn.classList.remove('hidden');
+      } else {
+        csvBtn.classList.add('hidden');
+        printBtn.classList.add('hidden');
+      }
+
+      const promoters = currentStoreData.filter(s => s.nps >= 9).length;
+      const detractors = currentStoreData.filter(s => s.nps <= 6).length;
       const npsScore = count === 0 ? 0 : Math.round(((promoters / count) - (detractors / count)) * 100);
 
       document.getElementById('count').innerText = count;
       document.getElementById('npsScore').innerText = npsScore;
 
       let html = '';
-      filtered.forEach(data => {
+      currentStoreData.forEach(data => {
         const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '送信中...';
         const npsLabel = data.nps >= 9 ? '推奨者' : data.nps >= 7 ? '中立者' : '期待未達者';
         
@@ -94,8 +158,9 @@
         const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
         const iconFile = data.nps >= 9 ? 'lunchmap01.webp' : data.nps >= 7 ? 'lunchmap02.webp' : 'lunchmap03.webp';
         
+        // 印刷時にカードがページをまたがないように break-inside-avoid を追加
         html += `
-          <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md">
+          <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md break-inside-avoid">
             <div class="flex justify-between items-center w-full gap-3 sm:gap-4">
               <div class="space-y-3 flex-1">
                 <div class="flex flex-col sm:flex-row sm:items-center text-base text-slate-500 gap-1 font-medium">
