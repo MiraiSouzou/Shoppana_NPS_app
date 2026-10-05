@@ -6,13 +6,11 @@
   <title>管理者ダッシュボード</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-  <!-- QRコード生成ライブラリ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-slate-50 p-4 sm:p-8 font-sans relative" style="font-family: 'Noto Sans JP', sans-serif;">
   <div class="max-w-5xl mx-auto space-y-8">
     
-    <!-- グループ用QRコードセクション -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8" id="groupQrSection">
       <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-4 tracking-tight">来場者用アンケートQRコード (グループ別)</h2>
       <p class="text-sm text-slate-500 mb-6">会場に掲示するための、グループ別一括アンケート用QRコードです。カードをクリックして取得してください。</p>
@@ -40,8 +38,6 @@
 
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
       <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight">店舗の管理</h2>
-      
-      <!-- 追加フォーム -->
       <div class="flex flex-col sm:flex-row gap-3 mb-8">
         <select id="newStoreGroup" class="p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-slate-500 transition-shadow text-base sm:w-48">
           <option value="A">Aグループ</option>
@@ -51,12 +47,9 @@
         <input type="text" id="newStoreName" class="flex-1 p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-slate-500 transition-shadow text-base" placeholder="新しい店舗名を入力">
         <button id="addStoreBtn" class="bg-slate-800 text-white font-bold px-8 py-3 sm:py-4 rounded-xl shadow hover:bg-slate-900 transition-all">店舗を追加</button>
       </div>
-
-      <!-- 登録済み店舗一覧 -->
       <div class="border-t border-slate-100 pt-6">
         <h3 class="text-base font-bold text-slate-700 mb-4">登録済みの店舗 (カードクリックで店舗用QRコード表示)</h3>
         <div id="storeManagementList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          <!-- 動的追加 -->
         </div>
       </div>
     </div>
@@ -76,7 +69,6 @@
             </tr>
           </thead>
           <tbody id="tableBody" class="text-slate-800 divide-y divide-slate-100">
-            <!-- 動的追加 -->
           </tbody>
         </table>
       </div>
@@ -85,13 +77,11 @@
     <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 sm:p-8">
       <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 tracking-tight">新着の回答コメント一覧</h2>
       <div id="adminCommentList" class="space-y-4 sm:space-y-5">
-        <!-- 動的追加 -->
       </div>
     </div>
 
   </div>
 
-  <!-- QRコード表示用モーダル (汎用化) -->
   <div id="qrModal" class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden flex items-center justify-center z-50 p-4 opacity-0 transition-opacity duration-200">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 sm:p-8 transform scale-95 transition-transform duration-200" id="qrModalContent">
       <div class="flex justify-between items-center mb-4">
@@ -103,7 +93,6 @@
       <p class="text-sm text-slate-500 mb-4" id="qrDescription">専用ページへのアクセス情報です。</p>
       
       <div class="flex justify-center mb-6 bg-slate-50 p-6 rounded-xl border border-slate-100">
-        <!-- QRコードと中央テキストのコンテナ -->
         <div class="relative inline-block">
           <div id="qrcode"></div>
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -154,7 +143,6 @@
       }
     };
 
-    // QRモーダルの制御
     const openQrModal = (type, targetId, targetName) => {
       const baseUrl = window.location.origin + window.location.pathname.replace(/[^/]*$/, '');
       let targetUrl = '';
@@ -399,7 +387,6 @@
       }
     });
 
-
     let storesList = [];
     let surveysList = [];
 
@@ -440,7 +427,6 @@
           const groupBadge = store.group ? `<span class="${badgeColorClass} text-sm font-bold px-3 py-1 rounded-full inline-block text-center w-12">${store.group}</span>` : '<span class="text-slate-400 text-xs">未設定</span>';
           const mGroupBadge = store.group ? `<span class="${badgeColorClass} text-xs font-bold px-2 py-0.5 rounded mr-2 flex-shrink-0">${store.group}</span>` : '';
 
-          // 店舗名にリンクを設定し、別タブで開く仕様に変更
           tableHtml += `<tr class="hover:bg-slate-50 transition-colors">
             <td class="p-4 align-middle border-b border-slate-100">${groupBadge}</td>
             <td class="p-4 font-bold text-slate-800 align-middle border-b border-slate-100">
@@ -489,7 +475,8 @@
         
         const bgColor = data.nps >= 9 ? 'bg-pink-50 border-pink-400' : data.nps >= 7 ? 'bg-green-50 border-green-400' : 'bg-sky-50 border-sky-400';
         const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
-        const iconFile = data.nps >= 9 ? 'lunchmap01.webp' : data.nps >= 7 ? 'lunchmap02.webp' : 'lunchmap03.webp';
+        // 変更箇所: 画像ファイル名をShoppanaシリーズに変更
+        const iconFile = data.nps >= 9 ? 'Shoppana01.webp' : data.nps >= 7 ? 'Shoppana02.webp' : 'Shoppana03.webp';
         
         commentHtml += `
           <div class="p-5 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md relative group">
