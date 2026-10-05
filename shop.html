@@ -7,7 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-    /* 印刷・PDF保存時の専用スタイル */
     @media print {
       body {
         -webkit-print-color-adjust: exact;
@@ -81,12 +80,10 @@
 
     const escapeHTML = str => (str || '').replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
 
-    // PDF保存・印刷処理
     document.getElementById('printBtn').addEventListener('click', () => {
       window.print();
     });
 
-    // CSVダウンロード処理
     document.getElementById('downloadCsvBtn').addEventListener('click', () => {
       if (currentStoreData.length === 0) return;
       
@@ -131,7 +128,6 @@
 
       const count = currentStoreData.length;
       
-      // データが存在する場合はボタンを表示
       const csvBtn = document.getElementById('downloadCsvBtn');
       const printBtn = document.getElementById('printBtn');
       if (count > 0) {
@@ -156,9 +152,9 @@
         
         const bgColor = data.nps >= 9 ? 'bg-pink-50 border-pink-400' : data.nps >= 7 ? 'bg-green-50 border-green-400' : 'bg-sky-50 border-sky-400';
         const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
-        const iconFile = data.nps >= 9 ? 'lunchmap01.webp' : data.nps >= 7 ? 'lunchmap02.webp' : 'lunchmap03.webp';
+        // 変更箇所: 画像ファイル名をShoppanaシリーズに変更
+        const iconFile = data.nps >= 9 ? 'Shoppana01.webp' : data.nps >= 7 ? 'Shoppana02.webp' : 'Shoppana03.webp';
         
-        // 印刷時にカードがページをまたがないように break-inside-avoid を追加
         html += `
           <div class="p-5 sm:p-6 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md break-inside-avoid">
             <div class="flex justify-between items-center w-full gap-3 sm:gap-4">
