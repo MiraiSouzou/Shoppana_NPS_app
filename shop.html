@@ -37,16 +37,16 @@
         </div>
       </div>
       <div class="grid grid-cols-2 gap-4 sm:gap-6 mt-2">
-        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
+        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center items-center">
           <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">総回答数</p>
           <p class="text-5xl sm:text-6xl font-bold text-slate-800"><span id="count">0</span><span class="text-xl sm:text-2xl text-slate-500 ml-1 font-medium">件</span></p>
         </div>
-        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl text-center flex flex-col justify-center">
-          <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">NPSスコア</p>
-          <div class="flex justify-center items-center gap-3">
+        <div class="bg-slate-50 border border-slate-100 p-5 sm:p-6 rounded-xl flex justify-center items-center gap-4 sm:gap-6">
+          <div class="flex flex-col items-center">
+            <p class="text-base sm:text-lg font-medium text-slate-500 mb-2">NPSスコア</p>
             <p class="text-5xl sm:text-6xl font-bold text-indigo-600" id="npsScore">0</p>
-            <img id="npsScoreIcon" src="" alt="総合評価アイコン" class="w-12 h-12 sm:w-14 sm:h-14 hidden object-contain">
           </div>
+          <img id="npsScoreIcon" src="" alt="総合評価アイコン" class="w-20 h-20 sm:w-24 sm:h-24 hidden object-contain">
         </div>
       </div>
     </div>
@@ -148,16 +148,15 @@
       document.getElementById('count').innerText = count;
       document.getElementById('npsScore').innerText = npsScore;
 
-      // NPSスコアに応じたアイコンの表示処理
       const scoreIcon = document.getElementById('npsScoreIcon');
       if (count > 0) {
         scoreIcon.classList.remove('hidden');
         if (npsScore > 0) {
-          scoreIcon.src = 'Shoppana01.webp'; // プラス（推奨者が多い）
+          scoreIcon.src = 'Shoppana01.webp';
         } else if (npsScore === 0) {
-          scoreIcon.src = 'Shoppana02.webp'; // ゼロ（中立）
+          scoreIcon.src = 'Shoppana02.webp';
         } else {
-          scoreIcon.src = 'Shoppana03.webp'; // マイナス（批判者が多い）
+          scoreIcon.src = 'Shoppana03.webp';
         }
       } else {
         scoreIcon.classList.add('hidden');
