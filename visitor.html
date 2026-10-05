@@ -49,6 +49,21 @@
         <button id="submitBtn" type="submit" class="w-full bg-slate-800 text-white text-lg font-bold py-4 sm:py-5 rounded-2xl shadow-md hover:bg-slate-900 transition-all transform">すべての回答を送信する</button>
       </div>
     </form>
+
+    <!-- 回答完了・引き換え券表示エリア (初期は非表示) -->
+    <div id="completionArea" class="hidden bg-white rounded-2xl shadow-md border-2 border-slate-100 p-6 sm:p-10 text-center space-y-6 mt-4">
+      <h3 class="text-2xl sm:text-3xl font-bold text-slate-800 tracking-tight">ご回答ありがとうございました！</h3>
+      <p class="text-base sm:text-lg text-slate-600 font-medium">以下の引換券をスタッフにご提示ください。</p>
+      
+      <div class="flex justify-center py-4">
+        <img id="ticketImage" src="" alt="ノベルティ引換券" class="max-w-full h-auto rounded-xl shadow-sm border border-slate-200 object-contain">
+      </div>
+      
+      <div class="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl inline-block w-full">
+        <p class="font-bold text-sm sm:text-base">※注意：この画面を閉じると引換券は無効になります</p>
+      </div>
+    </div>
+
   </div>
 
   <script type="module">
@@ -151,12 +166,21 @@
 
         await Promise.all(promises);
         
-        alert('すべての回答を送信しました。ご協力ありがとうございます。');
-        e.target.reset();
+        // フォームとタイトルを非表示にする
+        document.getElementById('surveyForm').classList.add('hidden');
+        document.getElementById('groupTitle').classList.add('hidden');
+        
+        // グループに応じたチケット画像をセット
+        document.getElementById('ticketImage').src = `ticket${targetGroup}.png`;
+        
+        // 引き換え券エリアを表示
+        document.getElementById('completionArea').classList.remove('hidden');
+        
+        // 画面トップへスクロール
         window.scrollTo(0, 0);
+
       } catch (error) {
         alert('エラーが発生しました。通信環境を確認し再度お試しください。');
-      } finally {
         submitBtn.innerText = "すべての回答を送信する";
         submitBtn.disabled = false;
       }
