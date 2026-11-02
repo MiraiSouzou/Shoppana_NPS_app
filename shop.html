@@ -29,7 +29,6 @@
       
       <div class="flex flex-col mb-6 gap-4">
         <h2 id="storeTitle" class="text-2xl sm:text-4xl font-bold text-slate-800 tracking-tight leading-snug w-full">店舗データを読み込み中...</h2>
-        <!-- sm:justify-end を追加し、PC表示時のみ右揃えにする -->
         <div class="flex gap-2 w-full sm:justify-end print-hidden">
           <button id="printBtn" class="flex-1 sm:flex-none justify-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-3 sm:py-2 rounded-xl sm:rounded-full shadow-sm transition-colors flex items-center gap-1.5 hidden">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -85,6 +84,7 @@
     let allSurveys = [];
     let storesList = [];
     let currentStoreName = "";
+    let currentStoreGroup = "";
     let currentStoreData = [];
 
     const escapeHTML = str => (str || '').replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag]));
@@ -102,14 +102,15 @@
       currentStoreData.forEach(data => {
         const date = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString('ja-JP') : '';
         const reason = (data.reason || '').replace(/"/g, '""');
-        csv += `"${date}","${data.gender || ''}","${data.time || ''}","${data.nps || ''}","${reason}"\n`;
+        csv += `"${date}","${data.gender || ''}","${data.time || ''}","${data.nps ?? ''}","${reason}"\n`;
       });
       
       const blob = new Blob([bom, csv], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${currentStoreName}_アンケート結果.csv`;
+      const groupPrefix = currentStoreGroup ? `${currentStoreGroup}グループ_` : '';
+      a.download = `${groupPrefix}${currentStoreName}_アンケート結果.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -126,13 +127,16 @@
       const storeData = storesList.find(s => s.id === targetStoreId);
       if (storeData) {
         currentStoreName = storeData.name;
+        currentStoreGroup = storeData.group || "";
         document.getElementById('storeTitle').innerText = `${currentStoreName} の回答データ`;
+        document.getElementById('targetStoreBadge').innerText = currentStoreGroup ? `専用ビュー（${currentStoreGroup}グループ）` : '専用ビュー';
       } else {
         document.getElementById('storeTitle').innerText = '店舗データを取得中...';
       }
 
+      // 店舗ID（storeId）のみで厳密にフィルタリングし、別グループの同名店舗データと混ざらないようにする
       currentStoreData = allSurveys
-        .filter(s => s.storeId === targetStoreId || s.store === currentStoreName)
+        .filter(s => s.storeId === targetStoreId)
         .sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
       const count = currentStoreData.length;
@@ -204,7 +208,7 @@
     onSnapshot(collection(db, "stores"), (snapshot) => {
       storesList = [];
       snapshot.forEach(doc => {
-        storesList.push({ id: doc.id, name: doc.data().name });
+        storesList.push({ id: doc.id, name: doc.data().name, group: doc.data().group });
       });
       renderResponses();
     });

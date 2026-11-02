@@ -308,7 +308,8 @@
           editBtn.disabled = true;
 
           try {
-            const q = query(collection(db, "surveys"), where("store", "==", oldName));
+            // storeIdで検索し、別グループの同名店舗データを巻き込まないようにする
+            const q = query(collection(db, "surveys"), where("storeId", "==", storeId));
             const querySnapshot = await getDocs(q);
             
             const batch = writeBatch(db);
@@ -339,7 +340,8 @@
           deleteBtn.disabled = true;
 
           try {
-            const q = query(collection(db, "surveys"), where("store", "==", storeName));
+            // storeIdで検索し、別グループの同名店舗データを誤削除しないようにする
+            const q = query(collection(db, "surveys"), where("storeId", "==", storeId));
             const querySnapshot = await getDocs(q);
             
             const batch = writeBatch(db);
@@ -394,6 +396,12 @@
       let tableHtml = '';
       let managementHtml = '';
       
+      // 店舗IDからグループ情報などを即座に引けるマップを作成
+      const storeMap = {};
+      storesList.forEach(s => {
+        storeMap[s.id] = s;
+      });
+
       const groupedStores = {};
       storesList.forEach(store => {
         const g = store.group || '未設定';
@@ -412,7 +420,8 @@
         let groupTotalDetractors = 0;
 
         storesInGroup.forEach(store => {
-          const storeSurveys = surveysList.filter(s => s.storeId === store.id || s.store === store.name);
+          // storeIdのみで厳密に集計
+          const storeSurveys = surveysList.filter(s => s.storeId === store.id);
           const count = storeSurveys.length;
           
           const promoters = storeSurveys.filter(s => s.nps >= 9).length;
@@ -475,15 +484,22 @@
         
         const bgColor = data.nps >= 9 ? 'bg-pink-50 border-pink-400' : data.nps >= 7 ? 'bg-green-50 border-green-400' : 'bg-sky-50 border-sky-400';
         const textColor = data.nps >= 9 ? 'text-pink-800' : data.nps >= 7 ? 'text-green-800' : 'text-sky-800';
-        // 変更箇所: 画像ファイル名をShoppanaシリーズに変更
         const iconFile = data.nps >= 9 ? 'Shoppana01.webp' : data.nps >= 7 ? 'Shoppana02.webp' : 'Shoppana03.webp';
         
+        // 店舗IDからグループ名を取得してバッジ表示（同名店舗の区別用）
+        const storeObj = storeMap[data.storeId];
+        const groupName = storeObj?.group || '';
+        const groupBadgeHtml = groupName ? `<span class="${getGroupBadgeColor(groupName)} text-xs font-bold px-2 py-0.5 rounded">${escapeHTML(groupName)}</span>` : '';
+
         commentHtml += `
           <div class="p-5 rounded-2xl shadow-sm border-l-4 ${bgColor} transition-all hover:shadow-md relative group">
             <div class="flex justify-between items-center w-full gap-3 sm:gap-4">
               <div class="space-y-3 flex-1">
                 <div class="flex flex-col sm:flex-row sm:items-center text-sm text-slate-500 gap-2 font-medium">
-                  <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded inline-block w-max">${escapeHTML(data.store)}</span>
+                  <div class="flex items-center gap-1.5">
+                    ${groupBadgeHtml}
+                    <span class="font-bold text-indigo-700 bg-indigo-50 px-2 py-1 rounded inline-block w-max">${escapeHTML(data.store)}</span>
+                  </div>
                   <span>${date} / ${escapeHTML(data.gender)} / ${escapeHTML(data.time)}</span>
                 </div>
                 <div>
