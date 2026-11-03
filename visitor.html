@@ -85,7 +85,7 @@
     const targetGroup = urlParams.get('group');
     
     if(targetGroup) {
-      document.getElementById('groupTitle').innerText = `Shoppana！アンケート (${targetGroup}グループ)`;
+      document.getElementById('groupTitle').innerText = `Shoppana！アンケート (${targetGroup})`;
     }
 
     const storesArea = document.getElementById('storesArea');
@@ -133,8 +133,9 @@
               </div>
 
               <div class="flex flex-col">
-                <label class="text-sm font-bold mb-2 flex items-center">その点数をつけた理由を教えてください。<span class="text-rose-600 text-xs ml-2 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-100">必須</span></label>
-                <textarea id="reason_${store.id}" rows="3" class="text-base p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-500 outline-none transition-shadow" placeholder="お店の良かった点、改善してほしい点など自由にご記入ください" required></textarea>
+                <!-- 必須タグを削除し、理由の入力を任意に変更 -->
+                <label class="text-sm font-bold mb-2 flex items-center">その点数をつけた理由を教えてください。</label>
+                <textarea id="reason_${store.id}" rows="3" class="text-base p-3 sm:p-4 border border-slate-200 rounded-xl bg-slate-50 focus:ring-2 focus:ring-slate-500 outline-none transition-shadow" placeholder="お店の良かった点、改善してほしい点など自由にご記入ください"></textarea>
               </div>
             </div>
           </div>
